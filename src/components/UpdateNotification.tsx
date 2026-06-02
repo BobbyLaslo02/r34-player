@@ -82,9 +82,10 @@ const styles: Record<string, React.CSSProperties> = {
 const SKIP_KEY = 'r34-skip-version'
 
 export default function UpdateNotification() {
-  const [state, setState] = useState<'idle' | 'available' | 'downloading' | 'downloaded'>('idle')
+  const [state, setState] = useState<'idle' | 'available' | 'downloading' | 'downloaded' | 'error'>('idle')
   const [version, setVersion] = useState('')
   const [progress, setProgress] = useState(0)
+  const [errorMsg, setErrorMsg] = useState('')
 
   useEffect(() => {
     const api = (window as any).electronAPI
@@ -105,6 +106,11 @@ export default function UpdateNotification() {
 
     api.onUpdateDownloaded(() => {
       setState('downloaded')
+    })
+
+    api.onUpdateError?.((msg: string) => {
+      setErrorMsg(msg)
+      setState('error')
     })
   }, [])
 
@@ -167,6 +173,17 @@ export default function UpdateNotification() {
           <div style={styles.buttons}>
             <button style={styles.btnSecondary} onClick={handleSkip}>Later</button>
             <button style={styles.btnPrimary} onClick={handleRestart}>Restart Now</button>
+          </div>
+        </>
+      )}
+
+      {state === 'error' && (
+        <>
+          <div style={styles.title}>Download Failed</div>
+          <div style={{ ...styles.notes, color: '#ff6b6b' }}>{errorMsg || 'An unknown error occurred.'}</div>
+          <div style={styles.buttons}>
+            <button style={styles.btnSecondary} onClick={handleSkip}>Dismiss</button>
+            <button style={styles.btnPrimary} onClick={handleInstall}>Retry</button>
           </div>
         </>
       )}

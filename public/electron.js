@@ -148,12 +148,24 @@ function setupAutoUpdater() {
       }
     })
 
+    autoUpdater.on('error', (err) => {
+      if (mainWindow) {
+        mainWindow.webContents.send('update-error', err.message || String(err))
+      }
+    })
+
     autoUpdater.checkForUpdates()
   }
 }
 
-ipcMain.handle('start-update-download', () => {
-  autoUpdater.downloadUpdate()
+ipcMain.handle('start-update-download', async () => {
+  try {
+    await autoUpdater.downloadUpdate()
+  } catch (err) {
+    if (mainWindow) {
+      mainWindow.webContents.send('update-error', err.message || String(err))
+    }
+  }
 })
 
 ipcMain.handle('restart-and-update', () => {
