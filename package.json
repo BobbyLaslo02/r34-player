@@ -60,14 +60,14 @@
         "nsis",
         "portable"
       ],
-      "icon": null
+      "icon": "public/icon.ico"
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "installerIcon": null
+      "installerIcon": "public/icon.ico"
     },
     "portable": {
       "artifactName": "R34-Player-Portable-${version}.exe"
