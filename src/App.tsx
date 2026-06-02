@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react'
+import React, { useState, useCallback, useRef, useEffect } from 'react'
 import Navbar from './components/Navbar'
 import BrowsePage from './components/BrowsePage'
 import PlayerPage from './components/PlayerPage'
@@ -9,6 +9,7 @@ import { R34Post } from './types'
 import { useFavorites, useVideoOnly } from './hooks/useFavorites'
 import { useRecentTags } from './hooks/useRecentTags'
 import { useLibrary } from './hooks/useLibrary'
+import { ThemeKey, applyTheme, getStoredTheme } from './styles/theme'
 
 type View = 'browse' | 'player' | 'library'
 
@@ -21,10 +22,18 @@ export default function App() {
   const [videoOnly, setVideoOnly] = useVideoOnly()
   const { recentTags, addRecentTag, clearRecent } = useRecentTags()
   const { entries, addToLibrary, removeFromLibrary, isInLibrary, shuffle } = useLibrary()
+  const [theme, setTheme] = useState<ThemeKey>(getStoredTheme)
 
   const [playlist, setPlaylist] = useState<R34Post[]>([])
   const [playlistIndex, setPlaylistIndex] = useState(0)
   const reshuffleRef = useRef<(() => R34Post[]) | null>(null)
+
+  useEffect(() => { applyTheme(theme) }, [theme])
+
+  const handleThemeChange = useCallback((key: ThemeKey) => {
+    setTheme(key)
+    applyTheme(key)
+  }, [])
 
   const handlePlay = useCallback((post: R34Post) => {
     setPlaylist([])
@@ -119,6 +128,8 @@ export default function App() {
           onAddRecent={addRecentTag}
           onClearRecent={clearRecent}
           libraryCount={entries.length}
+          theme={theme}
+          onThemeChange={handleThemeChange}
         />
         <div style={{ paddingTop: '68px' }}>
           {view === 'browse' ? (

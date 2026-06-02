@@ -1,9 +1,10 @@
 import React from 'react'
-import { THEME } from '../styles/theme'
+import { THEME, ThemeKey } from '../styles/theme'
 import VideoOnlyToggle from './VideoOnlyToggle'
 import VpnStatus from './VpnStatus'
 import TagChipInput from './TagChipInput'
 import SimpleSearch from './SimpleSearch'
+import ThemePicker from './ThemePicker'
 
 const styles: Record<string, React.CSSProperties> = {
   nav: {
@@ -76,9 +77,11 @@ interface NavbarProps {
   onAddRecent?: (tag: string) => void
   onClearRecent?: () => void
   libraryCount?: number
+  theme?: ThemeKey
+  onThemeChange?: (key: ThemeKey) => void
 }
 
-export default function Navbar({ onSearch, searchQuery, onHome, onLibrary, videoOnly, onVideoOnlyChange, searchTags, onTagsChange, recentTags, onAddRecent, onClearRecent, libraryCount }: NavbarProps) {
+export default function Navbar({ onSearch, searchQuery, onHome, onLibrary, videoOnly, onVideoOnlyChange, searchTags, onTagsChange, recentTags, onAddRecent, onClearRecent, libraryCount, theme, onThemeChange }: NavbarProps) {
   return (
     <nav style={styles.nav}>
       <div style={styles.logo} onClick={onHome}>
@@ -106,6 +109,8 @@ export default function Navbar({ onSearch, searchQuery, onHome, onLibrary, video
         />
         <div style={styles.separator} />
         <SimpleSearch onSearch={onSearch} />
+        <div style={styles.separator} />
+        {theme && onThemeChange && <ThemePicker current={theme} onChange={onThemeChange} />}
       </div>
     </nav>
   )
