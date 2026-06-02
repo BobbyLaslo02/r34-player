@@ -1,0 +1,117 @@
+{
+  "name": "r34-player",
+  "version": "1.8.0",
+  "description": "Desktop media player for browsing Rule34 content with Netflix/YouTube-style UI",
+  "author": {
+    "name": "R34 Player",
+    "email": "r34-player@users.noreply.github.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BobbyLaslo02/r34-player.git"
+  },
+  "private": true,
+  "homepage": "./",
+  "main": "public/electron.js",
+  "dependencies": {
+    "electron-updater": "^6.8.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1",
+    "typescript": "^4.9.5",
+    "web-vitals": "^2.1.4"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "electron": "^28.1.0",
+    "electron-builder": "^24.9.1",
+    "wait-on": "^7.2.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "electron-dev": "concurrently \"cross-env BROWSER=none react-scripts start\" \"wait-on http://localhost:3000 && electron .\"",
+    "electron-build": "react-scripts build && electron-builder",
+    "dist": "react-scripts build && electron-builder --win",
+    "dist:linux": "react-scripts build && electron-builder --linux",
+    "dist:linux:appimage": "react-scripts build && electron-builder --linux AppImage",
+    "dist:linux:pacman": "react-scripts build && electron-builder --linux pacman"
+  },
+  "build": {
+    "appId": "com.r34.player",
+    "productName": "R34 Player",
+    "files": [
+      "build/**/*",
+      "public/electron.js",
+      "public/preload.js"
+    ],
+    "extraResources": [
+      "public/icon.svg"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": null
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "installerIcon": null
+    },
+    "portable": {
+      "artifactName": "R34-Player-Portable-${version}.exe"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "pacman"
+      ],
+      "category": "Network",
+      "icon": "public/icon.png",
+      "artifactName": "r34-player-${version}.${ext}",
+      "desktop": {
+        "Name": "R34 Player",
+        "Comment": "Media browser for Rule34 content",
+        "Categories": "AudioVideo;Player;Network"
+      }
+    },
+    "pacman": {
+      "artifactName": "r34-player-${version}-x86_64.pkg.tar.zst",
+      "depends": [
+        "electron28"
+      ]
+    },
+    "appImage": {
+      "artifactName": "r34-player-${version}-x86_64.AppImage"
+    }
+  },
+  "publish": {
+    "provider": "github",
+    "owner": "BobbyLaslo02",
+    "repo": "r34-player",
+    "releaseType": "release"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

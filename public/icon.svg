@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <rect width="256" height="256" rx="32" fill="#141414"/>
+  <circle cx="100" cy="128" r="16" fill="#e50914"/>
+  <polygon points="108,128 108,118 124,128 108,138" fill="#fff"/>
+  <text x="144" y="138" font-family="Arial" font-size="48" font-weight="bold" fill="#e50914">R34</text>
+  <text x="144" y="166" font-family="Arial" font-size="18" fill="#666">PLAYER</text>
+</svg>
