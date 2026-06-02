@@ -60,14 +60,14 @@
         "nsis",
         "portable"
       ],
-      "icon": "public/icon.svg"
+      "icon": null
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "installerIcon": "public/icon.svg"
+      "installerIcon": null
     },
     "portable": {
       "artifactName": "R34-Player-Portable-${version}.exe"
@@ -78,7 +78,7 @@
         "pacman"
       ],
       "category": "Network",
-      "icon": "public/icon.svg",
+      "icon": null,
       "artifactName": "r34-player-${version}.${ext}",
       "desktop": {
         "Name": "R34 Player",
