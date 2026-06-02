@@ -216,7 +216,11 @@ const menuTemplate = [
 app.whenReady().then(() => {
   Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate))
   createWindow()
-  setupAutoUpdater()
+  // Wait for the window to finish loading before checking for updates,
+  // so the renderer's IPC listeners are registered and don't miss the event.
+  mainWindow.webContents.on('did-finish-load', () => {
+    setupAutoUpdater()
+  })
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()

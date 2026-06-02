@@ -28,7 +28,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: windows-exe
-          path: dist/*.exe
+          path: |
+            dist/*.exe
+            dist/latest.yml
 
   build-linux:
     runs-on: ubuntu-latest
@@ -51,7 +53,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: linux-appimage
-          path: dist/*.AppImage
+          path: |
+            dist/*.AppImage
+            dist/latest-linux.yml
 
   create-release:
     needs: [build-windows, build-linux]
@@ -77,7 +81,9 @@ jobs:
             See commit history for details.
           files: |
             windows-exe/*.exe
+            windows-exe/latest.yml
             linux-appimage/*.AppImage
+            linux-appimage/latest-linux.yml
           draft: false
           prerelease: false
         env:
