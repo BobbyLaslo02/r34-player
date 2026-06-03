@@ -84,6 +84,22 @@ interface NavbarProps {
 
 export default function Navbar({ onSearch, searchQuery, onHome, onLibrary, videoOnly, onVideoOnlyChange, searchTags, onTagsChange, recentTags, onAddRecent, onClearRecent, libraryCount, theme, onThemeChange }: NavbarProps) {
   const [gofileOpen, setGofileOpen] = useState(false)
+  const [version, setVersion] = useState('')
+  const [checking, setChecking] = useState(false)
+
+  React.useEffect(() => {
+    const api = (window as any).electronAPI
+    api?.getAppVersion?.().then(setVersion).catch(() => {})
+  }, [])
+
+  const handleCheckUpdates = () => {
+    const api = (window as any).electronAPI
+    if (api?.checkForUpdatesNow) {
+      setChecking(true)
+      api.checkForUpdatesNow()
+      setTimeout(() => setChecking(false), 5000)
+    }
+  }
 
   return (
     <nav style={styles.nav}>
@@ -134,6 +150,20 @@ export default function Navbar({ onSearch, searchQuery, onHome, onLibrary, video
         </div>
         <div style={styles.separator} />
         {theme && onThemeChange && <ThemePicker current={theme} onChange={onThemeChange} />}
+        <div style={styles.separator} />
+        <span style={{ fontSize: '11px', color: 'var(--r34-textSecondary)', fontFamily: 'monospace' }}>
+          v{version || '?'}
+        </span>
+        <button
+          onClick={handleCheckUpdates}
+          style={{
+            background: 'none', border: 'none', color: 'var(--r34-textSecondary)',
+            fontSize: '11px', cursor: 'pointer', padding: '2px 4px', fontFamily: 'inherit',
+          }}
+          title="Check for updates"
+        >
+          {checking ? '…' : '⟳'}
+        </button>
       </div>
     </nav>
   )

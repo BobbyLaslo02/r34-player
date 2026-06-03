@@ -11,4 +11,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   restartAndUpdate: () => ipcRenderer.invoke('restart-and-update'),
   uploadToGoFile: (opts) => ipcRenderer.invoke('upload-to-gofile', opts),
   onGoFileProgress: (callback) => ipcRenderer.on('gofile-progress', (_e, data) => callback(data)),
+  getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+  checkForUpdatesNow: () => ipcRenderer.invoke('check-for-updates'),
 })

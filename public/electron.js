@@ -179,6 +179,16 @@ ipcMain.handle('check-vpn', () => {
   })
 })
 
+ipcMain.handle('get-app-version', () => {
+  return app.getVersion()
+})
+
+ipcMain.handle('check-for-updates', () => {
+  if (autoUpdater) {
+    autoUpdater.checkForUpdates()
+  }
+})
+
 function buildMultipart(fields, filePath, fileName, boundary) {
   const parts = []
   for (const [key, val] of Object.entries(fields)) {
