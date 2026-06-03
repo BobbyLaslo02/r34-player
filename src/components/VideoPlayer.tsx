@@ -149,6 +149,8 @@ function setVideoVolume(postId: number, v: number) {
 export default function VideoPlayer({ post, height, onEnded }: VideoPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
+  const gainRef = useRef<GainNode | null>(null)
+  const ctxRef = useRef<AudioContext | null>(null)
   const [paused, setPaused] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
@@ -157,6 +159,28 @@ export default function VideoPlayer({ post, height, onEnded }: VideoPlayerProps)
   const [volume, setVolume] = useState(() => getVideoVolume(post.id) ?? getMasterVolume())
   const [muted, setMuted] = useState(false)
   const hideTimer = useRef<ReturnType<typeof setTimeout>>()
+
+  const setupAudio = useCallback(() => {
+    const vid = videoRef.current
+    if (!vid || ctxRef.current) return
+    try {
+      const ctx = new AudioContext()
+      const gain = ctx.createGain()
+      const source = ctx.createMediaElementSource(vid)
+      source.connect(gain)
+      gain.connect(ctx.destination)
+      ctxRef.current = ctx
+      gainRef.current = gain
+    } catch {}
+  }, [])
+
+  const applyVolume = useCallback((v: number, m: boolean) => {
+    if (gainRef.current && ctxRef.current) {
+      gainRef.current.gain.value = m ? 0 : v
+      if (ctxRef.current.state === 'suspended') ctxRef.current.resume()
+    }
+  }, [])
+
   useEffect(() => {
     const vid = videoRef.current
     if (!vid) return
@@ -175,6 +199,22 @@ export default function VideoPlayer({ post, height, onEnded }: VideoPlayerProps)
     document.addEventListener('fullscreenchange', onFsChange)
     return () => document.removeEventListener('fullscreenchange', onFsChange)
   }, [])
+
+  useEffect(() => {
+    if (volume > 1) setupAudio()
+  }, [volume, setupAudio])
+
+  useEffect(() => {
+    applyVolume(volume, muted)
+  }, [volume, muted, applyVolume])
+
+  useEffect(() => {
+    return () => {
+      if (ctxRef.current) ctxRef.current.close()
+      ctxRef.current = null
+      gainRef.current = null
+    }
+  }, [post])
 
   const togglePlay = useCallback(() => {
     if (!videoRef.current) return
@@ -201,10 +241,12 @@ export default function VideoPlayer({ post, height, onEnded }: VideoPlayerProps)
     setMuted(val === 0)
     setVideoVolume(post.id, val)
     if (videoRef.current) {
-      videoRef.current.volume = val
+      videoRef.current.volume = Math.min(val, 1)
       videoRef.current.muted = val === 0
     }
-  }, [post.id])
+    if (val > 1) setupAudio()
+    applyVolume(val, val === 0)
+  }, [post.id, setupAudio, applyVolume])
 
   const toggleMuted = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
@@ -239,7 +281,7 @@ export default function VideoPlayer({ post, height, onEnded }: VideoPlayerProps)
     return `${m}:${s.toString().padStart(2, '0')}`
   }
 
-  const volPercent = muted ? 0 : volume * 100
+  const volPercent = muted ? 0 : Math.round(volume * 100)
 
   return (
     <div
@@ -258,6 +300,7 @@ export default function VideoPlayer({ post, height, onEnded }: VideoPlayerProps)
         playsInline
         onClick={togglePlay}
         onEnded={onEnded}
+        onPlay={e => { const v = e.currentTarget; v.volume = Math.min(volume, 1); v.muted = muted; if (volume > 1) { setupAudio(); applyVolume(volume, muted) } }}
       >
         Your browser does not support the video tag.
       </video>
@@ -293,19 +336,19 @@ export default function VideoPlayer({ post, height, onEnded }: VideoPlayerProps)
           />
           <span style={styles.time}>{formatTime(currentTime)}</span>
           <button style={styles.volBtn} onClick={toggleMuted} title={muted ? 'Unmute' : 'Mute'}>
-            {muted || volume === 0 ? '🔇' : volume < 0.5 ? '🔉' : '🔊'}
+            {muted || volume === 0 ? '🔇' : volume < 0.5 ? '🔉' : volume <= 1 ? '🔊' : '🔊+'}
           </button>
-          <input
+          <            input
             type="range"
             min={0}
-            max={1}
+            max={2}
             step={0.05}
             value={muted ? 0 : volume}
             onChange={handleVolume}
             onClick={e => e.stopPropagation()}
             style={{
               ...styles.volSlider,
-              background: `linear-gradient(90deg, ${THEME.textSecondary} ${volPercent}%, rgba(255,255,255,0.15) ${volPercent}%)`,
+              background: `linear-gradient(90deg, ${THEME.textSecondary} ${(muted ? 0 : volume) / 2 * 100}%, rgba(255,255,255,0.15) ${(muted ? 0 : volume) / 2 * 100}%)`,
             }}
           />
           <button style={styles.fsBtn} onClick={toggleFullscreen} title="Fullscreen (F11)">

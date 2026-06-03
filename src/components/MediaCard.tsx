@@ -2,7 +2,6 @@ import React from 'react'
 import { R34Post } from '../types'
 import { THEME } from '../styles/theme'
 import { useFileSize } from '../hooks/useFileSize'
-import DownloadButton from './DownloadButton'
 
 const styles: Record<string, React.CSSProperties> = {
   card: {
@@ -155,7 +154,6 @@ export default function MediaCard({ post, onPlay, inLibrary, onAddToLibrary, onR
           <div style={styles.tags}>{post.tags.slice(0, 5).join(', ')}</div>
           <div style={styles.meta}>
             <span>{fileSize || post.rating}</span>
-            <DownloadButton url={post.file_url} filename={post.id + '.' + post.file_url.split('.').pop()} />
           </div>
         </div>
     </div>
