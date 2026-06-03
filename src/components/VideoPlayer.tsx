@@ -133,6 +133,19 @@ interface VideoPlayerProps {
   onEnded?: () => void
 }
 
+function getMasterVolume(): number {
+  try { return parseFloat(localStorage.getItem('r34-master-volume') || '') || 1 } catch { return 1 }
+}
+function setMasterVolume(v: number) {
+  try { localStorage.setItem('r34-master-volume', String(v)) } catch {}
+}
+function getVideoVolume(postId: number): number | null {
+  try { const v = localStorage.getItem('r34-vol-' + postId); return v !== null ? parseFloat(v) : null } catch { return null }
+}
+function setVideoVolume(postId: number, v: number) {
+  try { localStorage.setItem('r34-vol-' + postId, String(v)) } catch {}
+}
+
 export default function VideoPlayer({ post, height, onEnded }: VideoPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -141,10 +154,9 @@ export default function VideoPlayer({ post, height, onEnded }: VideoPlayerProps)
   const [duration, setDuration] = useState(0)
   const [showControls, setShowControls] = useState(true)
   const [isFullscreen, setIsFullscreen] = useState(false)
-  const [volume, setVolume] = useState(1)
+  const [volume, setVolume] = useState(() => getVideoVolume(post.id) ?? getMasterVolume())
   const [muted, setMuted] = useState(false)
   const hideTimer = useRef<ReturnType<typeof setTimeout>>()
-
   useEffect(() => {
     const vid = videoRef.current
     if (!vid) return
@@ -187,11 +199,12 @@ export default function VideoPlayer({ post, height, onEnded }: VideoPlayerProps)
     const val = Number(e.target.value)
     setVolume(val)
     setMuted(val === 0)
+    setVideoVolume(post.id, val)
     if (videoRef.current) {
       videoRef.current.volume = val
       videoRef.current.muted = val === 0
     }
-  }, [])
+  }, [post.id])
 
   const toggleMuted = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
