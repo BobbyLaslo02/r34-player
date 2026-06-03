@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, ipcMain } = require('electron')
+const { app, BrowserWindow, Menu, ipcMain, dialog } = require('electron')
 const path = require('path')
 const { exec } = require('child_process')
 const fs = require('fs')
@@ -185,6 +185,37 @@ ipcMain.handle('get-app-version', () => {
 ipcMain.handle('check-for-updates', () => {
   if (autoUpdater) {
     autoUpdater.checkForUpdates()
+  }
+})
+
+ipcMain.handle('export-data', async (_event, data) => {
+  const result = await dialog.showSaveDialog(mainWindow, {
+    title: 'Export R34 Player Data',
+    defaultPath: 'r34-player-data.json',
+    filters: [{ name: 'JSON', extensions: ['json'] }],
+  })
+  if (result.canceled || !result.filePath) return { canceled: true }
+  try {
+    fs.writeFileSync(result.filePath, JSON.stringify(data, null, 2), 'utf8')
+    return { success: true, path: result.filePath }
+  } catch (err) {
+    return { error: err.message }
+  }
+})
+
+ipcMain.handle('import-data', async () => {
+  const result = await dialog.showOpenDialog(mainWindow, {
+    title: 'Import R34 Player Data',
+    filters: [{ name: 'JSON', extensions: ['json'] }],
+    properties: ['openFile'],
+  })
+  if (result.canceled || result.filePaths.length === 0) return { canceled: true }
+  try {
+    const content = fs.readFileSync(result.filePaths[0], 'utf8')
+    const data = JSON.parse(content)
+    return { success: true, data }
+  } catch (err) {
+    return { error: err.message }
   }
 })
 

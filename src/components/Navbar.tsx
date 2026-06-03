@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import { THEME, ThemeKey } from '../styles/theme'
 import VideoOnlyToggle from './VideoOnlyToggle'
 import VpnStatus from './VpnStatus'
@@ -97,6 +97,34 @@ export default function Navbar({ onSearch, searchQuery, onHome, onLibrary, video
     }
   }
 
+  const handleExport = useCallback(async () => {
+    const api = (window as any).electronAPI
+    if (!api?.exportData) return
+    const keys: string[] = []
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i)
+      if (k && (k.startsWith('r34-') || k === 'gofile-token')) keys.push(k)
+    }
+    const data: Record<string, string> = {}
+    keys.forEach(k => { try { data[k] = localStorage.getItem(k) || '' } catch {} })
+    await api.exportData(data)
+  }, [])
+
+  const handleImport = useCallback(async () => {
+    const api = (window as any).electronAPI
+    if (!api?.importData) return
+    const result = await api.importData()
+    if (result?.canceled) return
+    if (result?.error) { alert('Import failed: ' + result.error); return }
+    if (result?.data) {
+      Object.entries(result.data).forEach(([k, v]: [string, any]) => {
+        try { localStorage.setItem(k, String(v)) } catch {}
+      })
+      alert('Data imported! The page will now reload to apply changes.')
+      window.location.reload()
+    }
+  }, [])
+
   return (
     <nav style={styles.nav}>
       <div style={styles.logo} onClick={onHome}>
@@ -152,6 +180,24 @@ export default function Navbar({ onSearch, searchQuery, onHome, onLibrary, video
                   </div>
                 )}
               </div>
+              <div style={styles.separator} />
+              <div style={styles.section}>Data</div>
+              <button
+                style={btnBase}
+                onClick={handleExport}
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--r34-bgHover)' }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+              >
+                ⬆ Export Data
+              </button>
+              <button
+                style={btnBase}
+                onClick={handleImport}
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--r34-bgHover)' }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+              >
+                ⬇ Import Data
+              </button>
               <div style={styles.separator} />
               <button
                 style={btnBase}
