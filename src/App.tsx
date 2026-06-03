@@ -132,7 +132,7 @@ export default function App() {
           onThemeChange={handleThemeChange}
         />
         <div style={{ paddingTop: '68px' }}>
-          {view === 'browse' ? (
+          <div style={{ display: view === 'browse' ? '' : 'none' }}>
             <BrowsePage
               onPlay={handlePlay}
               searchQuery={searchQuery}
@@ -147,7 +147,8 @@ export default function App() {
               isInLibrary={isInLibrary}
               onRemoveFromLibrary={removeFromLibrary}
             />
-          ) : view === 'library' ? (
+          </div>
+          <div style={{ display: view === 'library' ? '' : 'none' }}>
             <LibraryPage
               entries={entries}
               onPlay={handlePlay}
@@ -155,23 +156,26 @@ export default function App() {
               onShuffle={shuffle}
               onStartPlaylist={startPlaylist}
             />
-          ) : selectedPost ? (
-            <PlayerPage
-              post={selectedPost}
-              onBack={handleBack}
-              onSelectPost={handlePlay}
-              isFavorite={isFavorite}
-              onToggleFavorite={toggleFavorite}
-              playlist={playlist}
-              playlistIndex={playlistIndex}
-              onNext={nextInPlaylist}
-              onPrev={prevInPlaylist}
-              onStartPlaylist={startPlaylist}
-              onAddToLibrary={addToLibrary}
-              onRemoveFromLibrary={removeFromLibrary}
-              isInLibrary={isInLibrary}
-            />
-          ) : null}
+          </div>
+          <div style={{ display: view === 'player' && selectedPost ? '' : 'none' }}>
+            {selectedPost && (
+              <PlayerPage
+                post={selectedPost}
+                onBack={handleBack}
+                onSelectPost={handlePlay}
+                isFavorite={isFavorite}
+                onToggleFavorite={toggleFavorite}
+                playlist={playlist}
+                playlistIndex={playlistIndex}
+                onNext={nextInPlaylist}
+                onPrev={prevInPlaylist}
+                onStartPlaylist={startPlaylist}
+                onAddToLibrary={addToLibrary}
+                onRemoveFromLibrary={removeFromLibrary}
+                isInLibrary={isInLibrary}
+              />
+            )}
+          </div>
         </div>
       </div>
     </VpnGate>
