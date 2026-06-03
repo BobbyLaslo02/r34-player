@@ -7,12 +7,17 @@ import SimpleSearch from './SimpleSearch'
 import ThemePicker from './ThemePicker'
 import GoFileSettings from './GoFileSettings'
 
+const btnBase: React.CSSProperties = {
+  background: 'none', border: 'none', color: 'var(--r34-textSecondary)',
+  cursor: 'pointer', fontFamily: 'inherit', fontSize: '13px',
+  padding: '6px 10px', borderRadius: '4px', display: 'flex',
+  alignItems: 'center', gap: '6px', width: '100%', textAlign: 'left',
+}
+
 const styles: Record<string, React.CSSProperties> = {
   nav: {
     position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
+    top: 0, left: 0, right: 0,
     height: THEME.navbarHeight,
     background: 'linear-gradient(180deg, rgba(20,20,20,0.95) 0%, rgba(20,20,20,0.85) 100%)',
     display: 'flex',
@@ -21,48 +26,39 @@ const styles: Record<string, React.CSSProperties> = {
     zIndex: 1000,
     backdropFilter: 'blur(8px)',
     borderBottom: `1px solid ${THEME.border}`,
+    gap: '16px',
   },
   logo: {
-    fontSize: '24px',
-    fontWeight: 800,
-    color: THEME.accent,
-    cursor: 'pointer',
-    letterSpacing: '-0.5px',
-    marginRight: '40px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-    flexShrink: 0,
-  },
-  navLinks: {
-    display: 'flex',
-    gap: '24px',
-    alignItems: 'center',
-    flex: 1,
+    fontSize: '24px', fontWeight: 800, color: THEME.accent,
+    cursor: 'pointer', letterSpacing: '-0.5px',
+    display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0,
   },
   link: {
-    color: THEME.textSecondary,
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: 500,
-    transition: `color ${THEME.transition}`,
-    background: 'none',
-    border: 'none',
-    padding: 0,
-    fontFamily: 'inherit',
+    color: THEME.textSecondary, cursor: 'pointer', fontSize: '14px',
+    fontWeight: 500, transition: `color ${THEME.transition}`,
+    background: 'none', border: 'none', padding: 0, fontFamily: 'inherit',
   },
-  rightSection: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '16px',
-    flex: '0 1 auto',
+  navLinks: { display: 'flex', gap: '24px', alignItems: 'center', flexShrink: 0 },
+  searchWrap: { flex: 1, minWidth: 0 },
+  moreBtn: {
+    background: 'none', border: `1px solid ${THEME.border}`,
+    color: THEME.textSecondary, cursor: 'pointer', fontFamily: 'inherit',
+    fontSize: '20px', padding: '4px 10px', borderRadius: '4px', flexShrink: 0,
+    lineHeight: 1,
   },
-  separator: {
-    width: '1px',
-    height: '24px',
-    background: THEME.border,
-    flexShrink: 0,
+  dropdown: {
+    position: 'absolute', top: '100%', right: 0, marginTop: '8px',
+    background: THEME.bgCard, border: `1px solid ${THEME.border}`,
+    borderRadius: '8px', padding: '8px', width: '220px',
+    boxShadow: '0 8px 32px rgba(0,0,0,0.4)', zIndex: 9999,
   },
+  section: {
+    padding: '8px 10px', fontSize: '11px', fontWeight: 600,
+    color: THEME.textSecondary, textTransform: 'uppercase' as const,
+    letterSpacing: '0.5px',
+  },
+  separator: { height: '1px', background: THEME.border, margin: '6px 0' },
+  version: { fontSize: '11px', color: THEME.textSecondary, fontFamily: 'monospace', padding: '6px 10px' },
 }
 
 interface NavbarProps {
@@ -83,7 +79,9 @@ interface NavbarProps {
 }
 
 export default function Navbar({ onSearch, searchQuery, onHome, onLibrary, videoOnly, onVideoOnlyChange, searchTags, onTagsChange, recentTags, onAddRecent, onClearRecent, libraryCount, theme, onThemeChange }: NavbarProps) {
+  const [moreOpen, setMoreOpen] = useState(false)
   const [gofileOpen, setGofileOpen] = useState(false)
+  const [themeOpen, setThemeOpen] = useState(false)
   const [version, setVersion] = useState('')
   const [checking, setChecking] = useState(false)
 
@@ -112,11 +110,7 @@ export default function Navbar({ onSearch, searchQuery, onHome, onLibrary, video
           Library{libraryCount ? ` (${libraryCount})` : ''}
         </button>
       </div>
-      <div style={styles.rightSection}>
-        <VpnStatus />
-        <div style={styles.separator} />
-        <VideoOnlyToggle videoOnly={videoOnly} onChange={onVideoOnlyChange} />
-        <div style={styles.separator} />
+      <div style={styles.searchWrap}>
         <TagChipInput
           tags={searchTags}
           onTagsChange={onTagsChange}
@@ -126,44 +120,66 @@ export default function Navbar({ onSearch, searchQuery, onHome, onLibrary, video
           onAddRecent={onAddRecent}
           onClearRecent={onClearRecent}
         />
-        <div style={styles.separator} />
-        <SimpleSearch onSearch={onSearch} />
-        <div style={styles.separator} />
-        <div style={{ position: 'relative' }}>
-          <button
-            style={{
-              background: 'none', border: 'none', color: 'var(--r34-textSecondary)',
-              fontSize: '18px', cursor: 'pointer', padding: '4px 8px', borderRadius: '4px',
-              fontFamily: 'inherit',
-            }}
-            onClick={() => setGofileOpen(!gofileOpen)}
-            title="GoFile Cloud Settings"
-          >
-            ☁
-          </button>
-          {gofileOpen && (
-            <>
-              <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9998 }} onClick={() => setGofileOpen(false)} />
-              <GoFileSettings />
-            </>
-          )}
-        </div>
-        <div style={styles.separator} />
-        {theme && onThemeChange && <ThemePicker current={theme} onChange={onThemeChange} />}
-        <div style={styles.separator} />
-        <span style={{ fontSize: '11px', color: 'var(--r34-textSecondary)', fontFamily: 'monospace' }}>
-          v{version || '?'}
-        </span>
-        <button
-          onClick={handleCheckUpdates}
-          style={{
-            background: 'none', border: 'none', color: 'var(--r34-textSecondary)',
-            fontSize: '11px', cursor: 'pointer', padding: '2px 4px', fontFamily: 'inherit',
-          }}
-          title="Check for updates"
-        >
-          {checking ? '…' : '⟳'}
+      </div>
+      <div style={{ position: 'relative' }}>
+        <button style={styles.moreBtn} onClick={() => setMoreOpen(!moreOpen)} title="More">
+          ⋮
         </button>
+        {moreOpen && (
+          <>
+            <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9998 }} onClick={() => setMoreOpen(false)} />
+            <div style={styles.dropdown}>
+              <div style={styles.section}>Privacy</div>
+              <VpnStatus />
+              <div style={styles.separator} />
+              <div style={styles.section}>Filters</div>
+              <div style={{ padding: '4px 10px' }}>
+                <VideoOnlyToggle videoOnly={videoOnly} onChange={onVideoOnlyChange} />
+              </div>
+              <div style={{ padding: '4px 10px' }}>
+                <SimpleSearch onSearch={onSearch} />
+              </div>
+              <div style={styles.separator} />
+              <div style={styles.section}>Settings</div>
+              <div style={{ position: 'relative' }}>
+                <button
+                  style={btnBase}
+                  onClick={() => { setGofileOpen(!gofileOpen); setThemeOpen(false) }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--r34-bgHover)' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                >
+                  ☁ GoFile Cloud
+                </button>
+                {gofileOpen && <div style={{ position: 'static', marginTop: '4px' }}><GoFileSettings /></div>}
+              </div>
+              <div style={{ position: 'relative' }}>
+                <button
+                  style={btnBase}
+                  onClick={() => { setThemeOpen(!themeOpen); setGofileOpen(false) }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--r34-bgHover)' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                >
+                  🎨 Theme
+                </button>
+                {themeOpen && theme && onThemeChange && (
+                  <div style={{ marginTop: '4px' }}>
+                    <ThemePicker current={theme} onChange={onThemeChange} />
+                  </div>
+                )}
+              </div>
+              <div style={styles.separator} />
+              <button
+                style={btnBase}
+                onClick={handleCheckUpdates}
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--r34-bgHover)' }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+              >
+                {checking ? '⋯' : '⟳'} Check for Updates
+              </button>
+              <div style={styles.version}>v{version || '?'}</div>
+            </div>
+          </>
+        )}
       </div>
     </nav>
   )

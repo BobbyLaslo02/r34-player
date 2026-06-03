@@ -68,7 +68,8 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "installerIcon": null,
-      "artifactName": "R34-Player-Setup-${version}.exe"
+      "artifactName": "R34-Player-Setup-${version}.exe",
+      "uninstallPrevious": true
     },
     "portable": {
       "artifactName": "R34-Player-Portable-${version}.exe"
