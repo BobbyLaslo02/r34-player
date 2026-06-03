@@ -193,51 +193,41 @@ function buildMultipart(fields, filePath, fileName, boundary) {
 
 function gofileUpload(token, filePath, fileName, folderId) {
   return new Promise((resolve, reject) => {
-    https.get('https://api.gofile.io/getServer', (res) => {
-      let data = ''
-      res.on('data', c => data += c)
+    const boundary = '----r34' + Date.now()
+    const fields = { token }
+    if (folderId) fields.folderId = folderId
+    const body = buildMultipart(fields, filePath, fileName, boundary)
+
+    const opts = {
+      hostname: 'upload.gofile.io',
+      path: '/uploadfile',
+      method: 'POST',
+      headers: {
+        'Content-Type': `multipart/form-data; boundary=${boundary}`,
+        'Content-Length': body.length,
+      },
+    }
+
+    const req = https.request(opts, (res) => {
+      let d = ''
+      res.on('data', c => d += c)
       res.on('end', () => {
-        let server
-        try { server = JSON.parse(data).data.server } catch {}
-        if (!server) return reject(new Error('Failed to get GoFile server'))
-
-        const boundary = '----r34' + Date.now()
-        const fields = { token }
-        if (folderId) fields.folderId = folderId
-        const body = buildMultipart(fields, filePath, fileName, boundary)
-
-        const opts = {
-          hostname: server + '.gofile.io',
-          path: '/contents/uploadfile',
-          method: 'POST',
-          headers: {
-            'Content-Type': `multipart/form-data; boundary=${boundary}`,
-            'Content-Length': body.length,
-          },
+        try {
+          const json = JSON.parse(d)
+          if (json.status === 'ok') {
+            resolve(json.data.downloadPage)
+          } else {
+            reject(new Error('GoFile upload failed: ' + (json.status || 'unknown')))
+          }
+        } catch (e) {
+          reject(new Error('GoFile upload: invalid response'))
         }
-
-        const req = https.request(opts, (res) => {
-          let d = ''
-          res.on('data', c => d += c)
-          res.on('end', () => {
-            try {
-              const json = JSON.parse(d)
-              if (json.status === 'ok') {
-                resolve(json.data.downloadPage)
-              } else {
-                reject(new Error('GoFile upload failed: ' + (json.status || 'unknown')))
-              }
-            } catch (e) {
-              reject(new Error('GoFile upload: invalid response'))
-            }
-          })
-        })
-
-        req.on('error', reject)
-        req.write(body)
-        req.end()
       })
-    }).on('error', reject)
+    })
+
+    req.on('error', reject)
+    req.write(body)
+    req.end()
   })
 }
 
