@@ -20,9 +20,9 @@ export async function fetchPosts(
   try {
     data = await res.json()
   } catch {
-    throw new Error(`Invalid JSON response for: ${url}`)
+    return { count: 0, posts: [] }
   }
-  if (!Array.isArray(data)) throw new Error(`Expected array, got ${typeof data} for: ${url}`)
+  if (!Array.isArray(data)) return { count: 0, posts: [] }
 
   const posts = data.filter((p: any) => p.change && p.file_url).map(parsePost)
 

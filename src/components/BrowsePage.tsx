@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useState } from 'react'
+import React, { useMemo, useCallback, useState, useEffect, useRef } from 'react'
 import { R34Post, Favorite, Genre } from '../types'
 import { usePosts } from '../hooks/usePosts'
 import { useGenreThumbnails } from '../hooks/useGenreThumbnails'
@@ -133,6 +133,7 @@ function SearchResults({
   onAddToLibrary,
   isInLibrary,
   onRemoveFromLibrary,
+  onSearch,
 }: {
   query: string
   onPlay: (post: R34Post) => void
@@ -143,6 +144,7 @@ function SearchResults({
   onAddToLibrary?: (post: R34Post) => void
   isInLibrary?: (postId: number) => boolean
   onRemoveFromLibrary?: (postId: number) => void
+  onSearch?: (query: string) => void
 }) {
   const [searchSort, setSearchSort] = useState<SearchSort>('latest')
   const sortTag = SEARCH_SORTS.find(s => s.key === searchSort)?.tag ?? ''
@@ -152,6 +154,25 @@ function SearchResults({
   const filtered = useMemo(() => filterVideos(posts, videoOnly), [posts, videoOnly])
   const { sorted: sortedFiltered, loading: sizeLoading } = useFileSizeSort(filtered, searchSort === 'longest')
   const displayed = searchSort === 'longest' ? sortedFiltered : filtered
+
+  const [fallbackShown, setFallbackShown] = useState(false)
+  const fallbackRef = useRef(false)
+
+  useEffect(() => {
+    fallbackRef.current = false
+    setFallbackShown(false)
+  }, [query])
+
+  useEffect(() => {
+    if (!loading && !error && displayed.length === 0 && query.includes('_') && !fallbackRef.current && onSearch) {
+      fallbackRef.current = true
+      const words = query.split('_').filter(Boolean)
+      if (words.length > 1) {
+        setFallbackShown(true)
+        onSearch(words.join(' '))
+      }
+    }
+  }, [loading, error, displayed.length, query, onSearch])
 
   const searchFavId = `search-${query}`
   const isSearchFavorited = isFavorite ? isFavorite(searchFavId) : false
@@ -173,6 +194,11 @@ function SearchResults({
   return (
     <div style={styles.searchResults}>
       {videoOnly && <div style={styles.filterNotice}>🎬 Videos only — showing {displayed.length} of {totalCount.toLocaleString()} total results</div>}
+      {fallbackShown && (
+        <div style={{ ...styles.filterNotice, color: THEME.accent, fontSize: '13px', padding: '8px 24px' }}>
+          No results for "{query}" — splitting into individual tags
+        </div>
+      )}
       <div style={styles.searchMeta}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <h2 style={styles.searchTitle}>
@@ -226,7 +252,7 @@ function SearchResults({
             onRemoveFromLibrary={onRemoveFromLibrary}
           />
         ))}
-        {displayed.length === 0 && <div style={styles.error}>No posts found</div>}
+        {displayed.length === 0 && !fallbackShown && <div style={styles.error}>No posts found</div>}
       </div>
       {displayed.length > 0 && (
         <Pagination
@@ -386,6 +412,7 @@ export default function BrowsePage(props: BrowsePageProps) {
         onAddToLibrary={onAddToLibrary}
         isInLibrary={isInLibrary}
         onRemoveFromLibrary={onRemoveFromLibrary}
+        onSearch={onSearch}
       />
     )
   }
