@@ -1,6 +1,6 @@
 {
   "name": "r34-player",
-  "version": "1.9.4",
+  "version": "1.9.5",
   "description": "Desktop media player for browsing Rule34 content with Netflix/YouTube-style UI",
   "author": {
     "name": "R34 Player",
@@ -68,8 +68,7 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "installerIcon": null,
-      "artifactName": "R34-Player-Setup-${version}.exe",
-      "uninstallPrevious": true
+      "artifactName": "R34-Player-Setup-${version}.exe"
     },
     "portable": {
       "artifactName": "R34-Player-Portable-${version}.exe"

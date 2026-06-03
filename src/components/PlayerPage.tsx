@@ -4,7 +4,7 @@ import VideoPlayer from './VideoPlayer'
 import ImageViewer from './ImageViewer'
 import RelatedContent from './RelatedContent'
 import { usePosts } from '../hooks/usePosts'
-import GoFileButton from './GoFileButton'
+import DownloadButton from './DownloadButton'
 import { useFileSize } from '../hooks/useFileSize'
 import { THEME } from '../styles/theme'
 
@@ -218,7 +218,7 @@ export default function PlayerPage({ post, onBack, onSelectPost, isFavorite, onT
                 >
                   {isPostFavorited ? '★' : '☆'} Favorite Tags
                 </button>
-                <GoFileButton url={post.file_url} filename={post.id + '.' + post.file_url.split('.').pop()} />
+                <DownloadButton url={post.file_url} filename={post.id + '.' + post.file_url.split('.').pop()} />
             </div>
           </div>
 
