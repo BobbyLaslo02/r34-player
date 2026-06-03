@@ -38,7 +38,7 @@ const styles: Record<string, React.CSSProperties> = {
     background: 'none', border: 'none', padding: 0, fontFamily: 'inherit',
   },
   navLinks: { display: 'flex', gap: '24px', alignItems: 'center', flexShrink: 0 },
-  searchWrap: { flex: 1, minWidth: 0 },
+  searchWrap: { flex: 1, minWidth: 0, display: 'flex', gap: '8px', alignItems: 'center' },
   moreBtn: {
     background: 'none', border: `1px solid ${THEME.border}`,
     color: THEME.textSecondary, cursor: 'pointer', fontFamily: 'inherit',
@@ -118,6 +118,7 @@ export default function Navbar({ onSearch, searchQuery, onHome, onLibrary, video
           onAddRecent={onAddRecent}
           onClearRecent={onClearRecent}
         />
+        <SimpleSearch onSearch={onSearch} />
       </div>
       <div style={{ position: 'relative' }}>
         <button style={styles.moreBtn} onClick={() => setMoreOpen(!moreOpen)} title="More">
@@ -133,9 +134,6 @@ export default function Navbar({ onSearch, searchQuery, onHome, onLibrary, video
               <div style={styles.section}>Filters</div>
               <div style={{ padding: '4px 10px' }}>
                 <VideoOnlyToggle videoOnly={videoOnly} onChange={onVideoOnlyChange} />
-              </div>
-              <div style={{ padding: '4px 10px' }}>
-                <SimpleSearch onSearch={onSearch} />
               </div>
               <div style={styles.separator} />
               <div style={styles.section}>Settings</div>
