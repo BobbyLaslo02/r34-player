@@ -3,6 +3,7 @@ const path = require('path')
 const { exec } = require('child_process')
 const fs = require('fs')
 const os = require('os')
+const https = require('https')
 const { autoUpdater } = require('electron-updater')
 
 let mainWindow
@@ -176,6 +177,111 @@ ipcMain.handle('check-vpn', () => {
   return new Promise((resolve) => {
     checkVPN(resolve)
   })
+})
+
+function buildMultipart(fields, filePath, fileName, boundary) {
+  const parts = []
+  for (const [key, val] of Object.entries(fields)) {
+    parts.push(Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="${key}"\r\n\r\n${val}\r\n`))
+  }
+  const fileContent = fs.readFileSync(filePath)
+  parts.push(Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="${fileName}"\r\nContent-Type: application/octet-stream\r\n\r\n`))
+  parts.push(fileContent)
+  parts.push(Buffer.from(`\r\n--${boundary}--\r\n`))
+  return Buffer.concat(parts)
+}
+
+function gofileUpload(token, filePath, fileName, folderId) {
+  return new Promise((resolve, reject) => {
+    https.get('https://api.gofile.io/getServer', (res) => {
+      let data = ''
+      res.on('data', c => data += c)
+      res.on('end', () => {
+        let server
+        try { server = JSON.parse(data).data.server } catch {}
+        if (!server) return reject(new Error('Failed to get GoFile server'))
+
+        const boundary = '----r34' + Date.now()
+        const fields = { token }
+        if (folderId) fields.folderId = folderId
+        const body = buildMultipart(fields, filePath, fileName, boundary)
+
+        const opts = {
+          hostname: server + '.gofile.io',
+          path: '/contents/uploadfile',
+          method: 'POST',
+          headers: {
+            'Content-Type': `multipart/form-data; boundary=${boundary}`,
+            'Content-Length': body.length,
+          },
+        }
+
+        const req = https.request(opts, (res) => {
+          let d = ''
+          res.on('data', c => d += c)
+          res.on('end', () => {
+            try {
+              const json = JSON.parse(d)
+              if (json.status === 'ok') {
+                resolve(json.data.downloadPage)
+              } else {
+                reject(new Error('GoFile upload failed: ' + (json.status || 'unknown')))
+              }
+            } catch (e) {
+              reject(new Error('GoFile upload: invalid response'))
+            }
+          })
+        })
+
+        req.on('error', reject)
+        req.write(body)
+        req.end()
+      })
+    }).on('error', reject)
+  })
+}
+
+ipcMain.handle('upload-to-gofile', async (_event, { url, filename, token, folderId }) => {
+  const tmpDir = os.tmpdir()
+  const ext = path.extname(filename) || '.mp4'
+  const tmpFile = path.join(tmpDir, 'r34-gofile-' + Date.now() + ext)
+
+  try {
+    // Download from CDN
+    await new Promise((resolve, reject) => {
+      const file = fs.createWriteStream(tmpFile)
+      https.get(url, (res) => {
+        const total = parseInt(res.headers['content-length'] || '0', 10)
+        let downloaded = 0
+        res.on('data', (chunk) => {
+          downloaded += chunk.length
+          file.write(chunk)
+          if (total > 0 && mainWindow) {
+            mainWindow.webContents.send('gofile-progress', {
+              phase: 'download',
+              percent: Math.min(99, Math.round((downloaded / total) * 100)),
+            })
+          }
+        })
+        res.on('end', () => { file.end(); resolve() })
+        res.on('error', (err) => { file.close(); fs.unlink(tmpFile, () => {}); reject(err) })
+      }).on('error', (err) => { file.close(); fs.unlink(tmpFile, () => {}); reject(err) })
+    })
+
+    if (mainWindow) {
+      mainWindow.webContents.send('gofile-progress', { phase: 'upload', percent: 0 })
+    }
+
+    const link = await gofileUpload(token, tmpFile, filename, folderId)
+
+    // Clean up
+    fs.unlink(tmpFile, () => {})
+
+    return { link }
+  } catch (err) {
+    fs.unlink(tmpFile, () => {})
+    return { error: err.message || String(err) }
+  }
 })
 
 function createWindow() {

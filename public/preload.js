@@ -9,4 +9,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onUpdateError: (callback) => ipcRenderer.on('update-error', (_e, msg) => callback(msg)),
   startUpdateDownload: () => ipcRenderer.invoke('start-update-download'),
   restartAndUpdate: () => ipcRenderer.invoke('restart-and-update'),
+  uploadToGoFile: (opts) => ipcRenderer.invoke('upload-to-gofile', opts),
+  onGoFileProgress: (callback) => ipcRenderer.on('gofile-progress', (_e, data) => callback(data)),
 })

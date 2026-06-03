@@ -1,10 +1,11 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { THEME, ThemeKey } from '../styles/theme'
 import VideoOnlyToggle from './VideoOnlyToggle'
 import VpnStatus from './VpnStatus'
 import TagChipInput from './TagChipInput'
 import SimpleSearch from './SimpleSearch'
 import ThemePicker from './ThemePicker'
+import GoFileSettings from './GoFileSettings'
 
 const styles: Record<string, React.CSSProperties> = {
   nav: {
@@ -82,6 +83,8 @@ interface NavbarProps {
 }
 
 export default function Navbar({ onSearch, searchQuery, onHome, onLibrary, videoOnly, onVideoOnlyChange, searchTags, onTagsChange, recentTags, onAddRecent, onClearRecent, libraryCount, theme, onThemeChange }: NavbarProps) {
+  const [gofileOpen, setGofileOpen] = useState(false)
+
   return (
     <nav style={styles.nav}>
       <div style={styles.logo} onClick={onHome}>
@@ -109,6 +112,26 @@ export default function Navbar({ onSearch, searchQuery, onHome, onLibrary, video
         />
         <div style={styles.separator} />
         <SimpleSearch onSearch={onSearch} />
+        <div style={styles.separator} />
+        <div style={{ position: 'relative' }}>
+          <button
+            style={{
+              background: 'none', border: 'none', color: 'var(--r34-textSecondary)',
+              fontSize: '18px', cursor: 'pointer', padding: '4px 8px', borderRadius: '4px',
+              fontFamily: 'inherit',
+            }}
+            onClick={() => setGofileOpen(!gofileOpen)}
+            title="GoFile Cloud Settings"
+          >
+            ☁
+          </button>
+          {gofileOpen && (
+            <>
+              <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9998 }} onClick={() => setGofileOpen(false)} />
+              <GoFileSettings />
+            </>
+          )}
+        </div>
         <div style={styles.separator} />
         {theme && onThemeChange && <ThemePicker current={theme} onChange={onThemeChange} />}
       </div>
