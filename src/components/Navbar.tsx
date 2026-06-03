@@ -5,7 +5,6 @@ import VpnStatus from './VpnStatus'
 import TagChipInput from './TagChipInput'
 import SimpleSearch from './SimpleSearch'
 import ThemePicker from './ThemePicker'
-import GoFileSettings from './GoFileSettings'
 
 const btnBase: React.CSSProperties = {
   background: 'none', border: 'none', color: 'var(--r34-textSecondary)',
@@ -80,7 +79,6 @@ interface NavbarProps {
 
 export default function Navbar({ onSearch, searchQuery, onHome, onLibrary, videoOnly, onVideoOnlyChange, searchTags, onTagsChange, recentTags, onAddRecent, onClearRecent, libraryCount, theme, onThemeChange }: NavbarProps) {
   const [moreOpen, setMoreOpen] = useState(false)
-  const [gofileOpen, setGofileOpen] = useState(false)
   const [themeOpen, setThemeOpen] = useState(false)
   const [version, setVersion] = useState('')
   const [checking, setChecking] = useState(false)
@@ -144,18 +142,7 @@ export default function Navbar({ onSearch, searchQuery, onHome, onLibrary, video
               <div style={{ position: 'relative' }}>
                 <button
                   style={btnBase}
-                  onClick={() => { setGofileOpen(!gofileOpen); setThemeOpen(false) }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--r34-bgHover)' }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-                >
-                  ☁ GoFile Cloud
-                </button>
-                {gofileOpen && <div style={{ position: 'static', marginTop: '4px' }}><GoFileSettings /></div>}
-              </div>
-              <div style={{ position: 'relative' }}>
-                <button
-                  style={btnBase}
-                  onClick={() => { setThemeOpen(!themeOpen); setGofileOpen(false) }}
+                  onClick={() => { setThemeOpen(!themeOpen) }}
                   onMouseEnter={e => { e.currentTarget.style.background = 'var(--r34-bgHover)' }}
                   onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
                 >
