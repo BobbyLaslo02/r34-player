@@ -11,6 +11,7 @@ import { useRecentTags } from './hooks/useRecentTags'
 import { useLibrary } from './hooks/useLibrary'
 import { ThemeKey, applyTheme, getStoredTheme } from './styles/theme'
 import { fetchRandomPost } from './api/r34Client'
+import { usePlaylists } from './hooks/usePlaylists'
 
 type View = 'browse' | 'player' | 'library'
 
@@ -23,6 +24,7 @@ export default function App() {
   const [videoOnly, setVideoOnly] = useVideoOnly()
   const { recentTags, addRecentTag, clearRecent } = useRecentTags()
   const { entries, addToLibrary, removeFromLibrary, isInLibrary, shuffle } = useLibrary()
+  const { playlists, createPlaylist, deletePlaylist, renamePlaylist, addToPlaylist, removeFromPlaylist, isInPlaylist } = usePlaylists()
   const [theme, setTheme] = useState<ThemeKey>(getStoredTheme)
 
   const [playlist, setPlaylist] = useState<R34Post[]>([])
@@ -203,6 +205,13 @@ export default function App() {
               onRemove={removeFromLibrary}
               onShuffle={shuffle}
               onStartPlaylist={startPlaylist}
+              playlists={playlists}
+              onCreatePlaylist={createPlaylist}
+              onDeletePlaylist={deletePlaylist}
+              onRenamePlaylist={renamePlaylist}
+              onAddToPlaylist={addToPlaylist}
+              onRemoveFromPlaylist={removeFromPlaylist}
+              isInPlaylist={isInPlaylist}
             />
           </div>
           <div style={{ display: view === 'player' && selectedPost ? '' : 'none' }}>

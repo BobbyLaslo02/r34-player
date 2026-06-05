@@ -62,3 +62,10 @@ export interface LibraryEntry {
   post: R34Post
   addedAt: number
 }
+
+export interface Playlist {
+  id: string
+  name: string
+  postIds: number[]
+  createdAt: number
+}
