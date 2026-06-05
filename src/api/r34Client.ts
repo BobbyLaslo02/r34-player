@@ -39,6 +39,21 @@ export async function fetchPosts(
   return { count, posts }
 }
 
+export async function fetchRandomPost(): Promise<R34Post | null> {
+  const randomPage = Math.floor(Math.random() * 50)
+  try {
+    const res = await fetchPosts('', randomPage, 100)
+    if (res.posts.length > 0)
+      return res.posts[Math.floor(Math.random() * res.posts.length)]
+    const fallback = await fetchPosts('', 0, 100)
+    if (fallback.posts.length > 0)
+      return fallback.posts[Math.floor(Math.random() * fallback.posts.length)]
+    return null
+  } catch {
+    return null
+  }
+}
+
 export async function fetchTagSuggestions(query: string): Promise<TagSuggestion[]> {
   if (!query || query.length < 2) return []
   const url = `${AUTOCOMPLETE_URL}?q=${encodeURIComponent(query)}`

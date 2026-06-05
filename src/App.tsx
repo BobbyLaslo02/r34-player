@@ -10,6 +10,7 @@ import { useFavorites, useVideoOnly } from './hooks/useFavorites'
 import { useRecentTags } from './hooks/useRecentTags'
 import { useLibrary } from './hooks/useLibrary'
 import { ThemeKey, applyTheme, getStoredTheme } from './styles/theme'
+import { fetchRandomPost } from './api/r34Client'
 
 type View = 'browse' | 'player' | 'library'
 
@@ -111,6 +112,52 @@ export default function App() {
     setPlaylist([])
   }, [])
 
+  const handleSurpriseMe = useCallback(() => {
+    fetchRandomPost().then(post => {
+      if (post) {
+        setPlaylist([])
+        reshuffleRef.current = null
+        setSelectedPost(post)
+        setView('player')
+      }
+    })
+  }, [])
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      const t = (e.target as HTMLElement).tagName
+      if (t === 'INPUT' || t === 'TEXTAREA' || t === 'SELECT') return
+      switch (e.key) {
+        case 'ArrowLeft':
+          if (view === 'player' && playlist.length > 1) { e.preventDefault(); prevInPlaylist() }
+          break
+        case 'ArrowRight':
+          if (view === 'player' && playlist.length > 1) { e.preventDefault(); nextInPlaylist() }
+          break
+        case ' ':
+          if (view === 'player') {
+            e.preventDefault()
+            const v = document.querySelector('video')
+            if (v) { v.paused ? v.play() : v.pause() }
+          }
+          break
+        case 'f': case 'F':
+          if (view === 'player') {
+            document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen()
+          }
+          break
+        case 'r': case 'R':
+          handleSurpriseMe()
+          break
+        case 'Escape':
+          if (view === 'player' && !document.fullscreenElement) handleBack()
+          break
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [view, playlist.length, prevInPlaylist, nextInPlaylist, handleSurpriseMe, handleBack])
+
   return (
     <VpnGate>
       <div style={{ minHeight: '100vh', background: '#141414', color: '#fff' }}>
@@ -130,6 +177,7 @@ export default function App() {
           libraryCount={entries.length}
           theme={theme}
           onThemeChange={handleThemeChange}
+          onSurpriseMe={handleSurpriseMe}
         />
         <div style={{ paddingTop: '68px' }}>
           <div style={{ display: view === 'browse' ? '' : 'none' }}>

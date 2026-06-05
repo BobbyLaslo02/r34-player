@@ -75,9 +75,10 @@ interface NavbarProps {
   libraryCount?: number
   theme?: ThemeKey
   onThemeChange?: (key: ThemeKey) => void
+  onSurpriseMe?: () => void
 }
 
-export default function Navbar({ onSearch, searchQuery, onHome, onLibrary, videoOnly, onVideoOnlyChange, searchTags, onTagsChange, recentTags, onAddRecent, onClearRecent, libraryCount, theme, onThemeChange }: NavbarProps) {
+export default function Navbar({ onSearch, searchQuery, onHome, onLibrary, videoOnly, onVideoOnlyChange, searchTags, onTagsChange, recentTags, onAddRecent, onClearRecent, libraryCount, theme, onThemeChange, onSurpriseMe }: NavbarProps) {
   const [moreOpen, setMoreOpen] = useState(false)
   const [themeOpen, setThemeOpen] = useState(false)
   const [version, setVersion] = useState('')
@@ -135,6 +136,23 @@ export default function Navbar({ onSearch, searchQuery, onHome, onLibrary, video
         <button style={styles.link} onClick={onLibrary}>
           Library{libraryCount ? ` (${libraryCount})` : ''}
         </button>
+        {onSurpriseMe && (
+          <button
+            onClick={onSurpriseMe}
+            style={{
+              ...styles.link,
+              color: 'var(--r34-accent)',
+              fontSize: '13px',
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+            }}
+            title="Surprise me (R)"
+          >
+            🎲 Surprise
+          </button>
+        )}
       </div>
       <div style={styles.searchWrap}>
         <TagChipInput
