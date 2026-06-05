@@ -10,7 +10,6 @@ const styles: Record<string, React.CSSProperties> = {
     flexShrink: 0,
     cursor: 'pointer',
     borderRadius: THEME.radius,
-    overflow: 'hidden',
     background: THEME.bgCard,
     transition: `transform ${THEME.transition}, box-shadow ${THEME.transition}`,
   },
@@ -20,6 +19,7 @@ const styles: Record<string, React.CSSProperties> = {
     objectFit: 'cover',
     display: 'block',
     background: THEME.bgSecondary,
+    borderRadius: `${THEME.radius} ${THEME.radius} 0 0`,
   },
   info: {
     padding: '10px 12px',
@@ -79,8 +79,8 @@ const styles: Record<string, React.CSSProperties> = {
   },
   plBtn: {
     position: 'absolute',
-    bottom: '8px',
-    right: '38px',
+    bottom: '40px',
+    right: '8px',
     background: 'rgba(0,0,0,0.6)',
     color: THEME.text,
     border: 'none',
@@ -97,8 +97,8 @@ const styles: Record<string, React.CSSProperties> = {
   },
   plDropdown: {
     position: 'absolute',
-    bottom: '38px',
-    right: '38px',
+    bottom: '70px',
+    right: '8px',
     background: THEME.bgCard,
     border: `1px solid ${THEME.border}`,
     borderRadius: '8px',
@@ -210,7 +210,7 @@ export default function MediaCard({ post, onPlay, inLibrary, onAddToLibrary, onR
         style={{
           position: 'absolute',
           bottom: '8px',
-          right: hasPlaylistProps ? '38px' : '8px',
+          right: '8px',
           background: inLibrary ? THEME.accent : 'rgba(0,0,0,0.6)',
           color: THEME.text,
           border: 'none',

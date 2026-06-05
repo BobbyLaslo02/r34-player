@@ -69,6 +69,8 @@ export default function LibraryPage({
   onAddToPlaylist, onRemoveFromPlaylist, isInPlaylist,
 }: LibraryPageProps) {
   const [activePlaylistId, setActivePlaylistId] = useState<string | null>(null)
+  const [showNewInput, setShowNewInput] = useState(false)
+  const [newNameVal, setNewNameVal] = useState('')
   const [renaming, setRenaming] = useState<string | null>(null)
   const [renameVal, setRenameVal] = useState('')
 
@@ -109,12 +111,18 @@ export default function LibraryPage({
   }, [activePlaylist, entries, onStartPlaylist])
 
   const handleNewPlaylist = useCallback(() => {
-    const name = prompt('Playlist name:')
-    if (name && name.trim()) {
-      const pl = onCreatePlaylist(name.trim())
+    setShowNewInput(true)
+    setNewNameVal('')
+  }, [])
+
+  const handleNewSubmit = useCallback(() => {
+    if (newNameVal.trim()) {
+      const pl = onCreatePlaylist(newNameVal.trim())
       setActivePlaylistId(pl.id)
     }
-  }, [onCreatePlaylist])
+    setShowNewInput(false)
+    setNewNameVal('')
+  }, [newNameVal, onCreatePlaylist])
 
   const handleDeletePlaylist = useCallback((e: React.MouseEvent, id: string) => {
     e.stopPropagation()
@@ -210,26 +218,38 @@ export default function LibraryPage({
             )}
             {playlists.map(pl => (
               <div key={pl.id} style={{ position: 'relative', flexShrink: 0 }}>
-                <button
-                  onClick={() => setActivePlaylistId(pl.id)}
-                  style={{
-                    ...styles.playlistChip,
-                    background: THEME.bgCard,
-                    color: THEME.text,
-                    border: `1px solid ${THEME.border}`,
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--r34-bgHover)' }}
-                  onMouseLeave={e => { e.currentTarget.style.background = THEME.bgCard as string }}
-                >
-                  {pl.name} ({pl.postIds.length})
-                </button>
+                {renaming === pl.id ? (
+                  <input
+                    autoFocus
+                    value={renameVal}
+                    onChange={e => setRenameVal(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') handleRenameDone(pl.id); if (e.key === 'Escape') setRenaming(null) }}
+                    onBlur={() => handleRenameDone(pl.id)}
+                    style={{
+                      padding: '6px 14px', borderRadius: '20px', fontSize: '12px',
+                      border: `1px solid ${THEME.accent}`, background: THEME.bgCard,
+                      color: THEME.text, outline: 'none', fontFamily: 'inherit',
+                      width: '120px',
+                    }}
+                  />
+                ) : (
+                  <button
+                    onClick={() => setActivePlaylistId(pl.id)}
+                    style={{
+                      ...styles.playlistChip,
+                      background: THEME.bgCard,
+                      color: THEME.text,
+                      border: `1px solid ${THEME.border}`,
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--r34-bgHover)' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = THEME.bgCard as string }}
+                  >
+                    {pl.name} ({pl.postIds.length})
+                  </button>
+                )}
                 <div style={{ position: 'absolute', top: '-4px', right: '-4px', display: 'flex', gap: '2px' }}>
                   <button
-                    onClick={e => {
-                      e.stopPropagation()
-                      const newName = prompt('Rename:', pl.name)
-                      if (newName && newName.trim()) onRenamePlaylist(pl.id, newName.trim())
-                    }}
+                    onClick={e => handleRenameStart(e, pl.id, pl.name)}
                     style={{
                       background: 'rgba(0,0,0,0.6)', border: 'none', color: THEME.textSecondary,
                       borderRadius: '50%', width: '16px', height: '16px', fontSize: '9px',
@@ -251,6 +271,22 @@ export default function LibraryPage({
                 </div>
               </div>
             ))}
+            {showNewInput && (
+              <input
+                autoFocus
+                value={newNameVal}
+                onChange={e => setNewNameVal(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') handleNewSubmit(); if (e.key === 'Escape') { setShowNewInput(false); setNewNameVal('') } }}
+                onBlur={handleNewSubmit}
+                placeholder="Playlist name..."
+                style={{
+                  padding: '6px 14px', borderRadius: '20px', fontSize: '12px',
+                  border: `1px solid ${THEME.accent}`, background: THEME.bgCard,
+                  color: THEME.text, outline: 'none', fontFamily: 'inherit',
+                  flexShrink: 0, width: '130px',
+                }}
+              />
+            )}
           </div>
         </div>
       )}
