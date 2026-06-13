@@ -292,6 +292,7 @@ export default function VideoPlayer({ post, height, onEnded }: VideoPlayerProps)
       onMouseLeave={() => setShowControls(false)}
     >
       <video
+        key={post.id}
         ref={videoRef}
         src={post.file_url}
         style={styles.media}

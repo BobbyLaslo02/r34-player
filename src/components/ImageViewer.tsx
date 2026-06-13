@@ -119,7 +119,7 @@ export default function ImageViewer({ post, height, onEnded }: ImageViewerProps)
       onMouseMove={handleMouseMove}
       onMouseLeave={() => setShowInfo(false)}
     >
-      <img src={post.file_url} alt="" style={styles.img} draggable={false} />
+      <img key={post.id} src={post.file_url} alt="" style={styles.img} draggable={false} />
       <div style={{ ...styles.tagBanner, opacity: showInfo ? 1 : 0 }}>
         {post.tags.slice(0, 15).map(tag => (
           <span key={tag} style={styles.tag}>{tag}</span>
