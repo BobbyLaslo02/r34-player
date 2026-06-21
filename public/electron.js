@@ -1,4 +1,6 @@
 const { app, BrowserWindow, Menu, ipcMain, dialog } = require('electron')
+
+app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required')
 const path = require('path')
 const { exec } = require('child_process')
 const fs = require('fs')
