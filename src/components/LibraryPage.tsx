@@ -111,6 +111,7 @@ export default function LibraryPage({
   }, [activePlaylist, entries, onStartPlaylist])
 
   const handleNewPlaylist = useCallback(() => {
+    setActivePlaylistId(null)
     setShowNewInput(true)
     setNewNameVal('')
   }, [])
