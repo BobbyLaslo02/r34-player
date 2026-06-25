@@ -1,7 +1,7 @@
 const { app, BrowserWindow, Menu, ipcMain, dialog } = require('electron')
+const path = require('path')
 
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required')
-const path = require('path')
 const { exec } = require('child_process')
 const fs = require('fs')
 const os = require('os')
@@ -221,6 +221,20 @@ ipcMain.handle('import-data', async () => {
   } catch (err) {
     return { error: err.message }
   }
+})
+
+// Popout video window
+ipcMain.handle('open-popout', (_event, videoUrl) => {
+  const popout = new BrowserWindow({
+    width: 640,
+    height: 480,
+    title: 'R34 Player - Popout',
+    backgroundColor: '#000',
+    autoHideMenuBar: true,
+  })
+  const popoutPath = path.join(__dirname, '../build/popout.html')
+  popout.loadURL(`file://${popoutPath}?url=${encodeURIComponent(videoUrl)}`)
+  return null
 })
 
 function createWindow() {

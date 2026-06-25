@@ -13,4 +13,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   checkForUpdatesNow: () => ipcRenderer.invoke('check-for-updates'),
   exportData: (data) => ipcRenderer.invoke('export-data', data),
   importData: () => ipcRenderer.invoke('import-data'),
+  openPopout: (url) => ipcRenderer.invoke('open-popout', url),
 })

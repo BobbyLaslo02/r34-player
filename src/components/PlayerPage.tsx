@@ -218,6 +218,13 @@ export default function PlayerPage({ post, onBack, onSelectPost, isFavorite, onT
                 >
                   {isPostFavorited ? '★' : '☆'} Favorite Tags
                 </button>
+                <button
+                  style={styles.actionBtn}
+                  onClick={() => { const api = (window as any).electronAPI; api?.openPopout?.(post.file_url) }}
+                  title="Open in popout window"
+                >
+                  ⛶ Popout
+                </button>
                 <DownloadButton url={post.file_url} filename={post.id + '.' + post.file_url.split('.').pop()} />
             </div>
           </div>

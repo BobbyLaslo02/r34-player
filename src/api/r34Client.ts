@@ -26,14 +26,15 @@ export async function fetchPosts(
 
   const posts = data.filter((p: any) => p.change && p.file_url).map(parsePost)
 
-  let count = 0
+  let count = posts.length
   try {
     const countUrl = `${BASE_URL}/count${tags ? `?tags=${encodeURIComponent(tags)}` : ''}`
     const countRes = await fetch(countUrl)
     const countText = await countRes.text()
     const parser = new DOMParser()
     const xml = parser.parseFromString(countText, 'text/xml')
-    count = Number(xml.getElementsByTagName('posts')[0]?.getAttribute('count') || 0)
+    const parsed = Number(xml.getElementsByTagName('posts')[0]?.getAttribute('count') || 0)
+    if (parsed > count) count = parsed
   } catch {}
 
   return { count, posts }

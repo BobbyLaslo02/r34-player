@@ -76,13 +76,23 @@ interface NavbarProps {
   theme?: ThemeKey
   onThemeChange?: (key: ThemeKey) => void
   onSurpriseMe?: () => void
+  syncStatus?: string
+  syncUid?: string | null
+  syncPairCode?: string | null
+  onSyncPull?: () => void
+  onSyncGenerateCode?: () => Promise<string | null>
+  onSyncEnterCode?: (code: string) => Promise<boolean>
+  onSync?: () => void
 }
 
-export default function Navbar({ onSearch, searchQuery, onHome, onLibrary, videoOnly, onVideoOnlyChange, searchTags, onTagsChange, recentTags, onAddRecent, onClearRecent, libraryCount, theme, onThemeChange, onSurpriseMe }: NavbarProps) {
+export default function Navbar({ onSearch, searchQuery, onHome, onLibrary, videoOnly, onVideoOnlyChange, searchTags, onTagsChange, recentTags, onAddRecent, onClearRecent, libraryCount, theme, onThemeChange, onSurpriseMe, syncStatus, syncPairCode, onSyncPull, onSyncGenerateCode, onSyncEnterCode, onSync }: NavbarProps) {
   const [moreOpen, setMoreOpen] = useState(false)
   const [themeOpen, setThemeOpen] = useState(false)
   const [version, setVersion] = useState('')
   const [checking, setChecking] = useState(false)
+  const [pairInput, setPairInput] = useState('')
+  const [pairMsg, setPairMsg] = useState('')
+  const [genCode, setGenCode] = useState<string | null>(null)
 
   React.useEffect(() => {
     const api = (window as any).electronAPI
@@ -216,6 +226,69 @@ export default function Navbar({ onSearch, searchQuery, onHome, onLibrary, video
               >
                 ⬇ Import Data
               </button>
+              <div style={styles.separator} />
+              <div style={styles.section}>Cloud Sync</div>
+              <div style={{ padding: '4px 10px', fontSize: '11px', color: 'var(--r34-textSecondary)' }}>
+                Status: {syncStatus || 'disconnected'}
+              </div>
+              {genCode && (
+                <div style={{ padding: '4px 10px', fontSize: '13px', color: 'var(--r34-accent)', fontWeight: 600 }}>
+                  Code: {genCode}
+                </div>
+              )}
+              <button
+                style={btnBase}
+                onClick={() => {
+                  onSync?.()
+                  setGenCode(null)
+                  setPairInput('')
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--r34-bgHover)' }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+              >
+                ⇅ Sync Now
+              </button>
+              <button
+                style={btnBase}
+                onClick={async () => {
+                  if (!onSyncGenerateCode) return
+                  const code = await onSyncGenerateCode()
+                  if (code) setGenCode(code)
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--r34-bgHover)' }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+              >
+                🔑 Generate Pair Code
+              </button>
+              <div style={{ display: 'flex', gap: '4px', padding: '4px 10px' }}>
+                <input
+                  value={pairInput}
+                  onChange={e => setPairInput(e.target.value.toUpperCase())}
+                  placeholder="Enter code"
+                  style={{
+                    flex: 1, background: 'var(--r34-bgLight)', border: '1px solid var(--r34-border)',
+                    color: '#fff', padding: '4px 8px', borderRadius: '4px', fontSize: '12px',
+                    fontFamily: 'monospace', letterSpacing: '2px', textTransform: 'uppercase',
+                  }}
+                  maxLength={6}
+                />
+                <button
+                  style={{
+                    ...btnBase, width: 'auto', padding: '4px 8px', fontSize: '12px',
+                    background: 'var(--r34-accent)', color: '#000', borderRadius: '4px',
+                    justifyContent: 'center',
+                  }}
+                  onClick={async () => {
+                    if (!onSyncEnterCode || !pairInput) return
+                    const ok = await onSyncEnterCode(pairInput)
+                    setPairMsg(ok ? '✅ Paired!' : '❌ Invalid code')
+                    setTimeout(() => setPairMsg(''), 3000)
+                  }}
+                >
+                  Pair
+                </button>
+              </div>
+              {pairMsg && <div style={{ padding: '0 10px 4px', fontSize: '11px', color: 'var(--r34-textSecondary)' }}>{pairMsg}</div>}
               <div style={styles.separator} />
               <button
                 style={btnBase}

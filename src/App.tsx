@@ -12,6 +12,13 @@ import { useLibrary } from './hooks/useLibrary'
 import { ThemeKey, applyTheme, getStoredTheme } from './styles/theme'
 import { fetchRandomPost } from './api/r34Client'
 import { usePlaylists } from './hooks/usePlaylists'
+import { useCloudSync } from './hooks/useCloudSync'
+
+const _origSetItem = localStorage.setItem.bind(localStorage)
+localStorage.setItem = (key, value) => {
+  _origSetItem(key, value)
+  if (key.startsWith('r34-')) window.dispatchEvent(new Event('r34-data-changed'))
+}
 
 type View = 'browse' | 'player' | 'library'
 
@@ -30,6 +37,7 @@ export default function App() {
   const [playlist, setPlaylist] = useState<R34Post[]>([])
   const [playlistIndex, setPlaylistIndex] = useState(0)
   const reshuffleRef = useRef<(() => R34Post[]) | null>(null)
+  const sync = useCloudSync()
 
   useEffect(() => { applyTheme(theme) }, [theme])
 
@@ -180,6 +188,13 @@ export default function App() {
           theme={theme}
           onThemeChange={handleThemeChange}
           onSurpriseMe={handleSurpriseMe}
+          syncStatus={sync.status}
+          syncUid={sync.uid}
+          syncPairCode={sync.pairCode}
+          onSyncPull={sync.doPull}
+          onSyncGenerateCode={sync.doGenerateCode}
+          onSyncEnterCode={sync.doEnterCode}
+          onSync={sync.doSync}
         />
         <div style={{ paddingTop: '68px' }}>
           <div style={{ display: view === 'browse' ? '' : 'none' }}>
