@@ -151,8 +151,10 @@ function setupAutoUpdater() {
     })
 
     autoUpdater.on('error', (err) => {
+      const msg = err.message || String(err)
+      if (msg.includes('ENOENT') || msg.includes('app-update.yml') || msg.includes('latest.yml')) return
       if (mainWindow) {
-        mainWindow.webContents.send('update-error', err.message || String(err))
+        mainWindow.webContents.send('update-error', msg)
       }
     })
 
