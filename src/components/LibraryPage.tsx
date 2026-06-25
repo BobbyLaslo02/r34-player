@@ -69,8 +69,8 @@ export default function LibraryPage({
   onAddToPlaylist, onRemoveFromPlaylist, isInPlaylist,
 }: LibraryPageProps) {
   const [activePlaylistId, setActivePlaylistId] = useState<string | null>(null)
-  const [showNewInput, setShowNewInput] = useState(false)
-  const [newNameVal, setNewNameVal] = useState('')
+  const [showModal, setShowModal] = useState(false)
+  const [modalName, setModalName] = useState('')
   const [renaming, setRenaming] = useState<string | null>(null)
   const [renameVal, setRenameVal] = useState('')
 
@@ -111,19 +111,18 @@ export default function LibraryPage({
   }, [activePlaylist, entries, onStartPlaylist])
 
   const handleNewPlaylist = useCallback(() => {
-    setActivePlaylistId(null)
-    setShowNewInput(true)
-    setNewNameVal('')
+    setModalName('')
+    setShowModal(true)
   }, [])
 
-  const handleNewSubmit = useCallback(() => {
-    if (newNameVal.trim()) {
-      const pl = onCreatePlaylist(newNameVal.trim())
+  const handleModalSubmit = useCallback(() => {
+    if (modalName.trim()) {
+      const pl = onCreatePlaylist(modalName.trim())
       setActivePlaylistId(pl.id)
     }
-    setShowNewInput(false)
-    setNewNameVal('')
-  }, [newNameVal, onCreatePlaylist])
+    setShowModal(false)
+    setModalName('')
+  }, [modalName, onCreatePlaylist])
 
   const handleDeletePlaylist = useCallback((e: React.MouseEvent, id: string) => {
     e.stopPropagation()
@@ -272,21 +271,63 @@ export default function LibraryPage({
                 </div>
               </div>
             ))}
-            {showNewInput && (
-              <input
-                autoFocus
-                value={newNameVal}
-                onChange={e => setNewNameVal(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter') handleNewSubmit(); if (e.key === 'Escape') { setShowNewInput(false); setNewNameVal('') } }}
-                onBlur={handleNewSubmit}
-                placeholder="Playlist name..."
+            {showModal && (
+              <div
                 style={{
-                  padding: '6px 14px', borderRadius: '20px', fontSize: '12px',
-                  border: `1px solid ${THEME.accent}`, background: THEME.bgCard,
-                  color: THEME.text, outline: 'none', fontFamily: 'inherit',
-                  flexShrink: 0, width: '130px',
+                  position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                  background: 'rgba(0,0,0,0.6)', display: 'flex',
+                  alignItems: 'center', justifyContent: 'center', zIndex: 9999,
                 }}
-              />
+                onClick={() => { setShowModal(false); setModalName('') }}
+              >
+                <div
+                  onClick={e => e.stopPropagation()}
+                  style={{
+                    background: THEME.bgCard, borderRadius: '12px', padding: '24px',
+                    minWidth: '300px', border: `1px solid ${THEME.border}`,
+                  }}
+                >
+                  <div style={{ fontSize: '16px', fontWeight: 700, color: THEME.text, marginBottom: '16px' }}>
+                    New Playlist
+                  </div>
+                  <input
+                    autoFocus
+                    value={modalName}
+                    onChange={e => setModalName(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') handleModalSubmit(); if (e.key === 'Escape') { setShowModal(false); setModalName('') } }}
+                    placeholder="Playlist name..."
+                    style={{
+                      width: '100%', padding: '10px 14px', borderRadius: '8px',
+                      border: `1px solid ${THEME.border}`, background: THEME.bgSecondary,
+                      color: THEME.text, fontSize: '14px', outline: 'none',
+                      fontFamily: 'inherit', boxSizing: 'border-box',
+                      marginBottom: '16px',
+                    }}
+                  />
+                  <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                    <button
+                      onClick={() => { setShowModal(false); setModalName('') }}
+                      style={{
+                        background: 'transparent', border: `1px solid ${THEME.border}`,
+                        color: THEME.textSecondary, padding: '8px 20px', borderRadius: '8px',
+                        cursor: 'pointer', fontSize: '13px', fontFamily: 'inherit',
+                      }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleModalSubmit}
+                      style={{
+                        background: THEME.accent, border: 'none', color: THEME.text,
+                        padding: '8px 20px', borderRadius: '8px', cursor: 'pointer',
+                        fontSize: '13px', fontWeight: 600, fontFamily: 'inherit',
+                      }}
+                    >
+                      Create
+                    </button>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
         </div>
