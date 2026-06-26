@@ -11,7 +11,7 @@ function mergeValues(local: string | null, remote: string | null): string | null
     const lArr = JSON.parse(local)
     const rArr = JSON.parse(remote)
     if (Array.isArray(lArr) && Array.isArray(rArr)) {
-      const merged = [...new Set([...lArr, ...rArr])]
+      const merged = lArr.concat(rArr.filter((x: any) => !lArr.includes(x)))
       return JSON.stringify(merged)
     }
   } catch {}
