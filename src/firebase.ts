@@ -13,8 +13,9 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig)
 const auth = getAuth(app)
-setPersistence(auth, browserLocalPersistence)
 const db = getFirestore(app)
+
+setPersistence(auth, browserLocalPersistence).catch(() => {})
 
 export type AuthState = { user: User | null; loading: boolean }
 
@@ -53,20 +54,20 @@ export function logOut() {
   return signOut(auth)
 }
 
-function syncDoc() {
+function syncDocRef() {
   const user = getCurrentUser()
   if (!user) return null
   return doc(db, 'sync', user.uid)
 }
 
 export async function pushData(data: Record<string, string>): Promise<void> {
-  const ref = syncDoc()
+  const ref = syncDocRef()
   if (!ref) return
   await setDoc(ref, { data, lastUpdated: serverTimestamp() }, { merge: true })
 }
 
 export async function pullData(): Promise<Record<string, string> | null> {
-  const ref = syncDoc()
+  const ref = syncDocRef()
   if (!ref) return null
   const snap = await getDoc(ref)
   if (!snap.exists()) return null
@@ -74,7 +75,7 @@ export async function pullData(): Promise<Record<string, string> | null> {
 }
 
 export function listenData(callback: (data: Record<string, string> | null) => void): () => void {
-  const ref = syncDoc()
+  const ref = syncDocRef()
   if (!ref) return () => {}
   return onSnapshot(ref, (snap) => {
     if (!snap.exists()) { callback(null); return }
