@@ -3,6 +3,21 @@ import { onAuthChange, getCurrentUser, pushData, pullData, listenData, AuthState
 
 type SyncStatus = 'idle' | 'connecting' | 'syncing' | 'error'
 
+function mergeValues(local: string | null, remote: string | null): string | null {
+  if (local === null) return remote
+  if (remote === null) return local
+  if (local === remote) return local
+  try {
+    const lArr = JSON.parse(local)
+    const rArr = JSON.parse(remote)
+    if (Array.isArray(lArr) && Array.isArray(rArr)) {
+      const merged = [...new Set([...lArr, ...rArr])]
+      return JSON.stringify(merged)
+    }
+  } catch {}
+  return local.length >= remote.length ? local : remote
+}
+
 export function useCloudSync() {
   const [status, setStatus] = useState<SyncStatus>('idle')
   const [user, setUser] = useState<AuthState['user']>(null)
@@ -35,15 +50,21 @@ export function useCloudSync() {
     pushTimer.current = setTimeout(push, 2000)
   }, [push])
 
+  function applyMerged(remote: Record<string, string>) {
+    ignoreNext.current = true
+    Object.entries(remote).forEach(([k, v]) => {
+      const local = localStorage.getItem(k)
+      const merged = mergeValues(local, v)
+      if (merged !== null) localStorage.setItem(k, merged)
+    })
+    window.dispatchEvent(new Event('storage'))
+  }
+
   useEffect(() => {
     if (!user) return
     const unsub = listenData((data) => {
       if (!data) return
-      ignoreNext.current = true
-      Object.entries(data).forEach(([k, v]) => {
-        localStorage.setItem(k, v)
-      })
-      window.dispatchEvent(new Event('storage'))
+      applyMerged(data)
     })
     return unsub
   }, [user])
@@ -60,12 +81,7 @@ export function useCloudSync() {
     setStatus('syncing')
     try {
       const data = await pullData()
-      if (data) {
-        Object.entries(data).forEach(([k, v]) => {
-          if (k.startsWith('r34-')) localStorage.setItem(k, v)
-        })
-        window.dispatchEvent(new Event('storage'))
-      }
+      if (data) applyMerged(data)
       setStatus('idle')
     } catch { setStatus('error') }
   }, [])
