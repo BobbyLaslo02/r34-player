@@ -1,28 +1,24 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { ensureSignedIn, getUid, pushData, pullData, listenData, generateCode, findByCode } from '../firebase'
+import { onAuthChange, getCurrentUser, pushData, pullData, listenData, AuthState } from '../firebase'
 
-type SyncStatus = 'disconnected' | 'connecting' | 'connected' | 'syncing' | 'error'
+type SyncStatus = 'idle' | 'connecting' | 'syncing' | 'error'
 
 export function useCloudSync() {
-  const [status, setStatus] = useState<SyncStatus>('disconnected')
-  const [uid, setUid] = useState<string | null>(null)
-  const [pairCode, setPairCode] = useState<string | null>(null)
-  const [partnerUid, setPartnerUid] = useState<string | null>(null)
+  const [status, setStatus] = useState<SyncStatus>('idle')
+  const [user, setUser] = useState<AuthState['user']>(null)
   const pushTimer = useRef<ReturnType<typeof setTimeout>>()
   const ignoreNext = useRef(false)
 
   useEffect(() => {
     setStatus('connecting')
-    ensureSignedIn().then((user) => {
-      setUid(user.uid)
-      setStatus('connected')
-    }).catch(() => {
-      setUid(null)
-      setStatus('error')
+    return onAuthChange((s) => {
+      setUser(s.user)
+      setStatus(s.loading ? 'connecting' : s.user ? 'idle' : 'idle')
     })
   }, [])
 
   const push = useCallback(async () => {
+    if (!getCurrentUser()) return
     if (ignoreNext.current) { ignoreNext.current = false; return }
     setStatus('syncing')
     const keys = Object.keys(localStorage).filter(k => k.startsWith('r34-'))
@@ -30,7 +26,7 @@ export function useCloudSync() {
     keys.forEach(k => { data[k] = localStorage.getItem(k) || '' })
     try {
       await pushData(data)
-      setStatus('connected')
+      setStatus('idle')
     } catch { setStatus('error') }
   }, [])
 
@@ -40,25 +36,27 @@ export function useCloudSync() {
   }, [push])
 
   useEffect(() => {
-    if (!uid) return
+    if (!user) return
     const unsub = listenData((data) => {
       if (!data) return
       ignoreNext.current = true
       Object.entries(data).forEach(([k, v]) => {
-        if (k !== localStorage.getItem(k)) localStorage.setItem(k, v)
+        localStorage.setItem(k, v)
       })
       window.dispatchEvent(new Event('storage'))
     })
     return unsub
-  }, [uid])
+  }, [user])
 
   useEffect(() => {
+    if (!user) return
     const handler = () => debouncedPush()
     window.addEventListener('r34-data-changed', handler)
     return () => window.removeEventListener('r34-data-changed', handler)
-  }, [debouncedPush])
+  }, [user, debouncedPush])
 
   const doPull = useCallback(async () => {
+    if (!getCurrentUser()) return
     setStatus('syncing')
     try {
       const data = await pullData()
@@ -68,33 +66,14 @@ export function useCloudSync() {
         })
         window.dispatchEvent(new Event('storage'))
       }
-      setStatus('connected')
+      setStatus('idle')
     } catch { setStatus('error') }
   }, [])
-
-  const doGenerateCode = useCallback(async () => {
-    try {
-      const code = await generateCode()
-      setPairCode(code)
-      return code
-    } catch { return null }
-  }, [])
-
-  const doEnterCode = useCallback(async (code: string) => {
-    try {
-      const partner = await findByCode(code)
-      if (partner && partner !== uid) {
-        setPartnerUid(partner)
-        return true
-      }
-      return false
-    } catch { return false }
-  }, [uid])
 
   const doSync = useCallback(async () => {
     await push()
     await doPull()
   }, [push, doPull])
 
-  return { status, uid, pairCode, doPull, doSync, doGenerateCode, doEnterCode, partnerUid }
+  return { status, user, doPull, doSync }
 }

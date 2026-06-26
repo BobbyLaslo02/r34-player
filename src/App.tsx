@@ -3,6 +3,7 @@ import Navbar from './components/Navbar'
 import BrowsePage from './components/BrowsePage'
 import PlayerPage from './components/PlayerPage'
 import LibraryPage from './components/LibraryPage'
+import AccountPage from './components/AccountPage'
 import VpnGate from './components/VpnGate'
 import UpdateNotification from './components/UpdateNotification'
 import { R34Post } from './types'
@@ -20,7 +21,7 @@ localStorage.setItem = (key, value) => {
   if (key.startsWith('r34-')) window.dispatchEvent(new Event('r34-data-changed'))
 }
 
-type View = 'browse' | 'player' | 'library'
+type View = 'browse' | 'player' | 'library' | 'account'
 
 export default function App() {
   const [view, setView] = useState<View>('browse')
@@ -122,6 +123,12 @@ export default function App() {
     setPlaylist([])
   }, [])
 
+  const handleAccount = useCallback(() => {
+    setView('account')
+    setSelectedPost(null)
+    setPlaylist([])
+  }, [])
+
   const handleSurpriseMe = useCallback(() => {
     fetchRandomPost().then(post => {
       if (post) {
@@ -177,6 +184,7 @@ export default function App() {
           searchQuery={searchQuery}
           onHome={handleHome}
           onLibrary={handleLibrary}
+          onAccount={handleAccount}
           videoOnly={videoOnly}
           onVideoOnlyChange={setVideoOnly}
           searchTags={searchTags}
@@ -189,11 +197,6 @@ export default function App() {
           onThemeChange={handleThemeChange}
           onSurpriseMe={handleSurpriseMe}
           syncStatus={sync.status}
-          syncUid={sync.uid}
-          syncPairCode={sync.pairCode}
-          onSyncPull={sync.doPull}
-          onSyncGenerateCode={sync.doGenerateCode}
-          onSyncEnterCode={sync.doEnterCode}
           onSync={sync.doSync}
         />
         <div style={{ paddingTop: '68px' }}>
@@ -227,6 +230,14 @@ export default function App() {
               onAddToPlaylist={addToPlaylist}
               onRemoveFromPlaylist={removeFromPlaylist}
               isInPlaylist={isInPlaylist}
+            />
+          </div>
+          <div style={{ display: view === 'account' ? '' : 'none' }}>
+            <AccountPage
+              userEmail={sync.user?.email || null}
+              userUid={sync.user?.uid || null}
+              syncStatus={sync.status}
+              onSync={sync.doSync}
             />
           </div>
           <div style={{ display: view === 'player' && selectedPost ? '' : 'none' }}>
