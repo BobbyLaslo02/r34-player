@@ -24,6 +24,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '0 40px',
     zIndex: 1000,
     backdropFilter: 'blur(8px)',
+    WebkitBackdropFilter: 'blur(8px)',
     borderBottom: `1px solid ${THEME.border}`,
     gap: '16px',
   },
@@ -38,7 +39,7 @@ const styles: Record<string, React.CSSProperties> = {
     background: 'none', border: 'none', padding: 0, fontFamily: 'inherit',
   },
   navLinks: { display: 'flex', gap: '24px', alignItems: 'center', flexShrink: 0 },
-  searchWrap: { flex: 1, minWidth: 0, display: 'flex', gap: '8px', alignItems: 'center' },
+  searchWrap: { flex: 1, minWidth: 200, display: 'flex', gap: '8px', alignItems: 'center' },
   moreBtn: {
     background: 'none', border: `1px solid ${THEME.border}`,
     color: THEME.textSecondary, cursor: 'pointer', fontFamily: 'inherit',
