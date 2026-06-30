@@ -110,6 +110,7 @@ function sortBtnStyle(active: boolean): React.CSSProperties {
 
 interface BrowsePageProps {
   onPlay: (post: R34Post) => void
+  onStartPlaylist: (posts: R34Post[], startIndex: number, reshuffleFn?: () => R34Post[]) => void
   searchQuery: string
   searchTags: string[]
   videoOnly: boolean
@@ -126,6 +127,7 @@ interface BrowsePageProps {
 function SearchResults({
   query,
   onPlay,
+  onStartPlaylist,
   videoOnly,
   onToggleFavorite,
   isFavorite,
@@ -137,6 +139,7 @@ function SearchResults({
 }: {
   query: string
   onPlay: (post: R34Post) => void
+  onStartPlaylist?: (posts: R34Post[], startIndex: number, reshuffleFn?: () => R34Post[]) => void
   videoOnly: boolean
   onToggleFavorite?: (fav: Favorite) => void
   isFavorite?: (id: string) => boolean
@@ -242,11 +245,11 @@ function SearchResults({
         </div>
       </div>
       <div style={styles.grid}>
-        {displayed.map(post => (
+        {displayed.map((post, idx) => (
           <MediaCard
             key={post.id}
             post={post}
-            onPlay={onPlay}
+            onPlay={onStartPlaylist ? () => onStartPlaylist(displayed, idx) : onPlay}
             onAddToLibrary={onAddToLibrary}
             inLibrary={isInLibrary ? isInLibrary(post.id) : false}
             onRemoveFromLibrary={onRemoveFromLibrary}
@@ -398,13 +401,14 @@ function CategoriesView({
 }
 
 export default function BrowsePage(props: BrowsePageProps) {
-  const { onPlay, searchQuery, videoOnly, favorites, onToggleFavorite, isFavorite, onRemoveFavorite, onSearch, onAddToLibrary, isInLibrary, onRemoveFromLibrary } = props
+  const { onPlay, onStartPlaylist, searchQuery, videoOnly, favorites, onToggleFavorite, isFavorite, onRemoveFavorite, onSearch, onAddToLibrary, isInLibrary, onRemoveFromLibrary } = props
 
   if (searchQuery.trim()) {
     return (
       <SearchResults
         query={searchQuery.trim()}
         onPlay={onPlay}
+        onStartPlaylist={onStartPlaylist}
         videoOnly={videoOnly}
         onToggleFavorite={onToggleFavorite}
         isFavorite={isFavorite}

@@ -118,6 +118,7 @@ const styles: Record<string, React.CSSProperties> = {
 interface PlayerPageProps {
   post: R34Post
   onBack: () => void
+  onSearch?: (query: string) => void
   onSelectPost: (post: R34Post) => void
   isFavorite: (id: string) => boolean
   onToggleFavorite: (fav: Favorite) => void
@@ -131,7 +132,7 @@ interface PlayerPageProps {
   isInLibrary?: (postId: number) => boolean
 }
 
-export default function PlayerPage({ post, onBack, onSelectPost, isFavorite, onToggleFavorite, playlist, playlistIndex, onNext, onPrev, onStartPlaylist, onAddToLibrary, onRemoveFromLibrary, isInLibrary: isInLib }: PlayerPageProps) {
+export default function PlayerPage({ post, onBack, onSearch, onSelectPost, isFavorite, onToggleFavorite, playlist, playlistIndex, onNext, onPrev, onStartPlaylist, onAddToLibrary, onRemoveFromLibrary, isInLibrary: isInLib }: PlayerPageProps) {
   const playerHeight = 480
   const tagQuery = post.tags.slice(0, 3).join(' ')
   const { posts: related } = usePosts(tagQuery, 60)
@@ -245,7 +246,7 @@ export default function PlayerPage({ post, onBack, onSelectPost, isFavorite, onT
           <div style={styles.label}>Tags ({post.tags.length})</div>
           <div style={styles.tags}>
             {post.tags.map(tag => (
-              <span key={tag} style={styles.tag}>{tag}</span>
+              <span key={tag} style={styles.tag} onClick={() => { onSearch?.(tag); onBack() }}>{tag}</span>
             ))}
           </div>
         </div>

@@ -203,6 +203,7 @@ export default function App() {
           <div style={{ display: view === 'browse' ? '' : 'none' }}>
             <BrowsePage
               onPlay={handlePlay}
+              onStartPlaylist={startPlaylist}
               searchQuery={searchQuery}
               searchTags={searchTags}
               videoOnly={videoOnly}
@@ -245,6 +246,7 @@ export default function App() {
               <PlayerPage
                 post={selectedPost}
                 onBack={handleBack}
+                onSearch={handleSearch}
                 onSelectPost={handlePlay}
                 isFavorite={isFavorite}
                 onToggleFavorite={toggleFavorite}
