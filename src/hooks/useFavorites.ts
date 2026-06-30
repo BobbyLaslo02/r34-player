@@ -1,25 +1,17 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import { Favorite } from '../types'
 
 const STORAGE_KEY = 'r34-favorites'
 const VIDEOS_KEY = 'r34-video-only'
 
-function loadFavorites(): Favorite[] {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
-  } catch {
-    return []
-  }
-}
-
 export function useFavorites() {
-  const [favorites, setFavorites] = useState<Favorite[]>(loadFavorites)
-
-  useEffect(() => {
-    const handler = () => setFavorites(loadFavorites())
-    window.addEventListener('r34-storage-changed', handler)
-    return () => window.removeEventListener('r34-storage-changed', handler)
-  }, [])
+  const [favorites, setFavorites] = useState<Favorite[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+    } catch {
+      return []
+    }
+  })
 
   const toggleFavorite = useCallback((fav: Favorite) => {
     setFavorites(prev => {

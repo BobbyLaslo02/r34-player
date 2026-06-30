@@ -1,6 +1,6 @@
 {
   "name": "r34-player",
-  "version": "1.15.0",
+  "version": "1.16.0",
   "description": "Desktop media player for browsing Rule34 content with Netflix/YouTube-style UI",
   "author": {
     "name": "R34 Player",
@@ -15,7 +15,6 @@
   "main": "public/electron.js",
   "dependencies": {
     "electron-updater": "^6.8.3",
-    "firebase": "^12.15.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",

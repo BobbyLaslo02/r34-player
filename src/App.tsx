@@ -3,7 +3,6 @@ import Navbar from './components/Navbar'
 import BrowsePage from './components/BrowsePage'
 import PlayerPage from './components/PlayerPage'
 import LibraryPage from './components/LibraryPage'
-import AccountPage from './components/AccountPage'
 import VpnGate from './components/VpnGate'
 import UpdateNotification from './components/UpdateNotification'
 import { R34Post } from './types'
@@ -13,15 +12,8 @@ import { useLibrary } from './hooks/useLibrary'
 import { ThemeKey, applyTheme, getStoredTheme } from './styles/theme'
 import { fetchRandomPost } from './api/r34Client'
 import { usePlaylists } from './hooks/usePlaylists'
-import { useCloudSync } from './hooks/useCloudSync'
 
-const _origSetItem = localStorage.setItem.bind(localStorage)
-localStorage.setItem = (key, value) => {
-  _origSetItem(key, value)
-  if (key.startsWith('r34-')) window.dispatchEvent(new Event('r34-data-changed'))
-}
-
-type View = 'browse' | 'player' | 'library' | 'account'
+type View = 'browse' | 'player' | 'library'
 
 export default function App() {
   const [view, setView] = useState<View>('browse')
@@ -38,7 +30,6 @@ export default function App() {
   const [playlist, setPlaylist] = useState<R34Post[]>([])
   const [playlistIndex, setPlaylistIndex] = useState(0)
   const reshuffleRef = useRef<(() => R34Post[]) | null>(null)
-  const sync = useCloudSync()
 
   useEffect(() => { applyTheme(theme) }, [theme])
 
@@ -123,12 +114,6 @@ export default function App() {
     setPlaylist([])
   }, [])
 
-  const handleAccount = useCallback(() => {
-    setView('account')
-    setSelectedPost(null)
-    setPlaylist([])
-  }, [])
-
   const handleSurpriseMe = useCallback(() => {
     fetchRandomPost().then(post => {
       if (post) {
@@ -139,6 +124,28 @@ export default function App() {
       }
     })
   }, [])
+
+  const handleScanLocalVideos = useCallback(async () => {
+    const api = (window as any).electronAPI
+    if (!api?.listLocalVideos) return
+    const result = await api.listLocalVideos()
+    if (!result?.files?.length) { alert('No videos found in Documents/r34customvids'); return }
+    let added = 0
+    result.files.forEach((f: any) => {
+      const isVideo = ['.mp4','.webm','.mkv','.avi','.mov','.flv','.wmv'].includes(f.ext)
+      const post: R34Post = {
+        id: f.id, parent_id: null, type: isVideo ? 'video' : 'image', score: 0,
+        rating: 'safe', source: '', tags: ['local'], file_url: f.path,
+        width: 0, height: 0, sample_url: '', sample_width: 0, sample_height: 0,
+        preview_url: '', preview_width: 0, preview_height: 0, change: 0,
+        md5: '', creator_id: '', has_children: '', created_at: '', status: '',
+        has_notes: '', has_comments: false, comments_url: '', creator_url: '',
+      }
+      addToLibrary(post)
+      added++
+    })
+    alert(`Added ${added} local videos to library`)
+  }, [addToLibrary])
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -184,7 +191,6 @@ export default function App() {
           searchQuery={searchQuery}
           onHome={handleHome}
           onLibrary={handleLibrary}
-          onAccount={handleAccount}
           videoOnly={videoOnly}
           onVideoOnlyChange={setVideoOnly}
           searchTags={searchTags}
@@ -196,8 +202,7 @@ export default function App() {
           theme={theme}
           onThemeChange={handleThemeChange}
           onSurpriseMe={handleSurpriseMe}
-          syncStatus={sync.status}
-          onSync={sync.doSync}
+          onScanLocalVideos={handleScanLocalVideos}
         />
         <div style={{ paddingTop: '68px' }}>
           <div style={{ display: view === 'browse' ? '' : 'none' }}>
@@ -231,14 +236,6 @@ export default function App() {
               onAddToPlaylist={addToPlaylist}
               onRemoveFromPlaylist={removeFromPlaylist}
               isInPlaylist={isInPlaylist}
-            />
-          </div>
-          <div style={{ display: view === 'account' ? '' : 'none' }}>
-            <AccountPage
-              userEmail={sync.user?.email || null}
-              userUid={sync.user?.uid || null}
-              syncStatus={sync.status}
-              onSync={sync.doSync}
             />
           </div>
           <div style={{ display: view === 'player' && selectedPost ? '' : 'none' }}>

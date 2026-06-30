@@ -1,24 +1,16 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import { R34Post, LibraryEntry } from '../types'
 
 const STORAGE_KEY = 'r34-library'
 
-function loadEntries(): LibraryEntry[] {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
-  } catch {
-    return []
-  }
-}
-
 export function useLibrary() {
-  const [entries, setEntries] = useState<LibraryEntry[]>(loadEntries)
-
-  useEffect(() => {
-    const handler = () => setEntries(loadEntries())
-    window.addEventListener('r34-storage-changed', handler)
-    return () => window.removeEventListener('r34-storage-changed', handler)
-  }, [])
+  const [entries, setEntries] = useState<LibraryEntry[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+    } catch {
+      return []
+    }
+  })
 
   const addToLibrary = useCallback((post: R34Post) => {
     setEntries(prev => {

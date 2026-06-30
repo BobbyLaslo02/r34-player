@@ -65,7 +65,6 @@ interface NavbarProps {
   searchQuery: string
   onHome: () => void
   onLibrary: () => void
-  onAccount: () => void
   videoOnly: boolean
   onVideoOnlyChange: (v: boolean) => void
   searchTags: string[]
@@ -77,11 +76,10 @@ interface NavbarProps {
   theme?: ThemeKey
   onThemeChange?: (key: ThemeKey) => void
   onSurpriseMe?: () => void
-  syncStatus?: string
-  onSync?: () => void
+  onScanLocalVideos?: () => void
 }
 
-export default function Navbar({ onSearch, searchQuery, onHome, onLibrary, onAccount, videoOnly, onVideoOnlyChange, searchTags, onTagsChange, recentTags, onAddRecent, onClearRecent, libraryCount, theme, onThemeChange, onSurpriseMe, syncStatus, onSync }: NavbarProps) {
+export default function Navbar({ onSearch, searchQuery, onHome, onLibrary, videoOnly, onVideoOnlyChange, searchTags, onTagsChange, recentTags, onAddRecent, onClearRecent, libraryCount, theme, onThemeChange, onSurpriseMe, onScanLocalVideos }: NavbarProps) {
   const [moreOpen, setMoreOpen] = useState(false)
   const [themeOpen, setThemeOpen] = useState(false)
   const [version, setVersion] = useState('')
@@ -138,9 +136,6 @@ export default function Navbar({ onSearch, searchQuery, onHome, onLibrary, onAcc
         <button style={styles.link} onClick={onHome}>Browse</button>
         <button style={styles.link} onClick={onLibrary}>
           Library{libraryCount ? ` (${libraryCount})` : ''}
-        </button>
-        <button style={styles.link} onClick={onAccount}>
-          Account
         </button>
         {onSurpriseMe && (
           <button
@@ -222,27 +217,16 @@ export default function Navbar({ onSearch, searchQuery, onHome, onLibrary, onAcc
               >
                 ⬇ Import Data
               </button>
-              <div style={styles.separator} />
-              <div style={styles.section}>Cloud Sync</div>
-              <div style={{ padding: '4px 10px', fontSize: '11px', color: 'var(--r34-textSecondary)' }}>
-                Status: {syncStatus || 'not signed in'}
-              </div>
-              <button
-                style={btnBase}
-                onClick={onAccount}
-                onMouseEnter={e => { e.currentTarget.style.background = 'var(--r34-bgHover)' }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-              >
-                👤 Account Settings
-              </button>
-              <button
-                style={btnBase}
-                onClick={onSync}
-                onMouseEnter={e => { e.currentTarget.style.background = 'var(--r34-bgHover)' }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-              >
-                ⇅ Sync Now
-              </button>
+              {onScanLocalVideos && (
+                <button
+                  style={btnBase}
+                  onClick={onScanLocalVideos}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--r34-bgHover)' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                >
+                  📁 Scan Local Videos
+                </button>
+              )}
               <div style={styles.separator} />
               <button
                 style={btnBase}

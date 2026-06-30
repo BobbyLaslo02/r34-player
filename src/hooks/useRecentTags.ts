@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 
 const STORAGE_KEY = 'r34-recent-tags'
 const MAX_RECENT = 20
@@ -8,22 +8,14 @@ export interface RecentTag {
   lastUsed: number
 }
 
-function loadTags(): RecentTag[] {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
-  } catch {
-    return []
-  }
-}
-
 export function useRecentTags() {
-  const [recentTags, setRecentTags] = useState<RecentTag[]>(loadTags)
-
-  useEffect(() => {
-    const handler = () => setRecentTags(loadTags())
-    window.addEventListener('r34-storage-changed', handler)
-    return () => window.removeEventListener('r34-storage-changed', handler)
-  }, [])
+  const [recentTags, setRecentTags] = useState<RecentTag[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+    } catch {
+      return []
+    }
+  })
 
   const addRecentTag = useCallback((tag: string) => {
     setRecentTags(prev => {

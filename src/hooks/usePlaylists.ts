@@ -1,24 +1,16 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import { Playlist } from '../types'
 
 const STORAGE_KEY = 'r34-playlists'
 
-function loadPlaylists(): Playlist[] {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
-  } catch {
-    return []
-  }
-}
-
 export function usePlaylists() {
-  const [playlists, setPlaylists] = useState<Playlist[]>(loadPlaylists)
-
-  useEffect(() => {
-    const handler = () => setPlaylists(loadPlaylists())
-    window.addEventListener('r34-storage-changed', handler)
-    return () => window.removeEventListener('r34-storage-changed', handler)
-  }, [])
+  const [playlists, setPlaylists] = useState<Playlist[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+    } catch {
+      return []
+    }
+  })
 
   const save = useCallback((updated: Playlist[]) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))

@@ -237,6 +237,31 @@ ipcMain.handle('open-popout', (_event, videoUrl) => {
   return null
 })
 
+// Scan local r34customvids folder
+ipcMain.handle('list-local-videos', () => {
+  const docsPath = app.getPath('documents')
+  const folder = path.join(docsPath, 'r34customvids')
+  const videoExts = new Set(['.mp4', '.webm', '.mkv', '.avi', '.mov', '.flv', '.wmv', '.gif', '.png', '.jpg', '.jpeg', '.webp'])
+  try {
+    if (!fs.existsSync(folder)) {
+      fs.mkdirSync(folder, { recursive: true })
+      return { folder, files: [] }
+    }
+    const files = fs.readdirSync(folder).filter(f => {
+      const ext = path.extname(f).toLowerCase()
+      return videoExts.has(ext)
+    }).map((f, i) => ({
+      id: -(i + 1),
+      name: f,
+      path: path.join(folder, f),
+      ext: path.extname(f).toLowerCase(),
+    }))
+    return { folder, files }
+  } catch (err) {
+    return { folder, files: [], error: err.message }
+  }
+})
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1400,
